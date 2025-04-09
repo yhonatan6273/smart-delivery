@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from fastapi import FastAPI, Response, status,Depends,APIRouter
+from fastapi import Response, status,Depends,APIRouter
 from typing import List
 
 
@@ -7,9 +7,7 @@ from typing import List
 from backend.db.database import get_db
 from backend.Models import models
 from sqlalchemy.orm import Session
-from backend import schemas
-
-
+from backend.schemas import schemas
 
 router=APIRouter(prefix="/deliveries",tags=["deliveries"])
 
@@ -18,14 +16,14 @@ router=APIRouter(prefix="/deliveries",tags=["deliveries"])
 
 
 #geting all the deliveries in the data
-@router.get("",response_model=List[schemas.DeliveryPostGetOutput])
+@router.get("", response_model=List[schemas.DeliveryPostGetOutput])
 def get_deliveries(db: Session= Depends(get_db)):
     deliveries=db.query(models.Delivery).all()
     return deliveries
 
 #user creating new delivery we sending it to the data
-@router.post("",status_code=status.HTTP_201_CREATED,response_model=schemas.DeliveryPostGetOutput)
-def make_delivery(delivery:schemas.DeliveryCreate,db: Session= Depends(get_db)):
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.DeliveryPostGetOutput)
+def make_delivery(delivery: schemas.DeliveryCreate, db: Session= Depends(get_db)):
 
     new_delivery=models.Delivery(**delivery.model_dump())
     db.add(new_delivery)
@@ -46,8 +44,8 @@ def delete_delivery(id:int,db: Session= Depends(get_db)):
 
 
 #updating delivery in our data
-@router.put("/{id}",response_model=schemas.DeliveryPutOutput)
-def update_delivery(id:int,delivery:schemas.DeliveryUpdate,db: Session= Depends(get_db)):
+@router.put("/{id}", response_model=schemas.DeliveryPutOutput)
+def update_delivery(id:int, delivery: schemas.DeliveryUpdate, db: Session= Depends(get_db)):
 
     delivery_query=db.query(models.Delivery).filter(models.Delivery.id==id)
     if delivery_query.first() is None:
