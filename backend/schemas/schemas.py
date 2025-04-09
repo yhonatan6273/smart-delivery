@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel,Field,EmailStr
 from typing import  Literal
-from backend.Models import models
+
 
 
 class DeliveryBase(BaseModel):
