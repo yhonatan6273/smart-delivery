@@ -1,4 +1,4 @@
-# Python cache
+#cache
 __pycache__/
 *.py[cod]
 *.so
@@ -7,36 +7,34 @@ __pycache__/
 dist/
 build/
 
-# Virtual environment
+#virtual environment
 .venv/
 env/
 venv/
 
-# IDEs
+#ides
 .vscode/
 .idea/
 
-# OS files
+#os files
 .DS_Store
 Thumbs.db
 
-# Env files
+#env files
 .env
 
-# Alembic
+#alembic
 alembic/versions/*.pyc
 alembic/versions/__pycache__/
 
-# SQLite (אם השתמשת בהתחלה)
+#SQLite
 *.sqlite3
 
-# Pytest
+#pytest
 .cache/
 pytest_cache/
 
-# Jupyter Notebooks (למקרה שתשתמש בעתיד)
-.ipynb_checkpoints/
 
-# Logs
+#logs
 *.log
 logs/
