@@ -1,0 +1,42 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+
+# Alembic
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+
+# SQLite (אם השתמשת בהתחלה)
+*.sqlite3
+
+# Pytest
+.cache/
+pytest_cache/
+
+# Jupyter Notebooks (למקרה שתשתמש בעתיד)
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
