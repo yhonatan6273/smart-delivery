@@ -1,8 +1,6 @@
 from datetime import datetime
-
 from pydantic import BaseModel,Field,EmailStr
-from typing import  Literal
-
+from typing import  Literal,Optional
 
 
 class DeliveryBase(BaseModel):
@@ -25,9 +23,23 @@ class DeliveryCreate(DeliveryBase):
 class DeliveryUpdate(BaseModel):
     status: Literal["delivered", "in-transit", "approve"] = Field(..., examples=["delivered", "in-transit", "approve"])
 
+class DeliveryPostOutput(BaseModel):
+    id: int
+    delivery_type: str
+    sender_phone: str
+    sender_name: str
+    sender_address: str
+    receiver_address: str
+    receiver_name: str
+    receiver_phone: str
+    status: str
+    price: float
 
 
-class DeliveryPostGetOutput(BaseModel):
+    class Config:
+        from_attributes = True
+
+class DeliveryGetOutput(BaseModel):
     id:int
     delivery_type: str
     sender_phone:str
@@ -40,7 +52,6 @@ class DeliveryPostGetOutput(BaseModel):
     price:float
     time_of_created: datetime
 
-
     class Config:
         from_attributes = True
 
@@ -52,20 +63,4 @@ class DeliveryPutOutput(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class UserCreate(BaseModel):
-    email:EmailStr
-    password:str
-
-
-
-class UserOutput(BaseModel):
-    id:int
-    email:EmailStr
-    time_of_created:datetime
-
-    class Config:
-        from_attributes = True
-
 
