@@ -12,13 +12,12 @@ passlib==1.7.4
 bcrypt==4.3.0
 python-dotenv==1.1.0
 email_validator==2.2.0
-kafka-python==2.0.2
 confluent-kafka==2.9.0
 pytest==8.3.5
 pytest-asyncio==0.26.0
 httpx==0.28.1
 scikit-learn==1.4.2
-numpy==2.2.5
+numpy==2.2.0
 pandas==2.2.2
 joblib==1.4.2
 pydantic==2.11.1
