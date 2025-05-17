@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 load_dotenv()
 
 SECRET_KEY =os.getenv("SECRET_KEY")
@@ -48,9 +49,4 @@ def get_current_user(token:str=Depends(oauth2_scheme),db: Session = Depends(get_
     token=verify_access_token(token,credentials_exception)
     user = db.query(models.User).filter(models.User.id==token.id).first()
     return user
-
-
-
-
-
 
