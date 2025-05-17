@@ -1,0 +1,67 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest 
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT_INTERNAL
+    depends_on:
+      - zookeeper
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+    ports:
+      - "9000:9000"
+    depends_on:
+      - kafka
+
+  backend: 
+    build: .
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/usr/src/app #:ro
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
+    environment:
+      - DATABASE_HOSTNAME=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=deliveries_database
+      - DATABASE_USERNAME=postgres
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: deliveries_database
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
