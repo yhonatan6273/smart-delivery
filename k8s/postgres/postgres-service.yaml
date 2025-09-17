@@ -1,0 +1,12 @@
+#postgres service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: delivery-platform
+spec:
+  ports:
+    #the port that this service will expose, the fastapi application will connect to the database on this port
+    - port: 5432
+  selector:
+    app: postgres

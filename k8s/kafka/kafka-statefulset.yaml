@@ -1,0 +1,41 @@
+#kafka statefulset
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-statefulset
+  namespace: delivery-platform
+spec:
+  serviceName: "kafka-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+    #a list of containers that will run inside each Pod.
+      containers:
+        - name: kafka
+        #the docker image that the container will run.
+          image: bitnami/kafka:latest
+          #a list of network ports that the container exposes.
+          ports:
+            - containerPort: 9092
+          #a list of environment variables passed to the container
+          env:
+            - name: KAFKA_CFG_NODE_ID
+              value: "0"
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_CFG_LISTENERS
+              value: "PLAINTEXT://:9092,CONTROLLER://:9093"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-service.delivery-platform.svc.cluster.local:9092"
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: "0@kafka-statefulset-0.kafka-service.delivery-platform.svc.cluster.local:9093"

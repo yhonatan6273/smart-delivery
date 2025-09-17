@@ -1,0 +1,18 @@
+# git files
+.git
+.gitignore
+
+# virtual environment
+.venv/
+venv/
+
+# iDE and cache files
+.idea/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# local environment files
+.env
+.env.local
+*.env
