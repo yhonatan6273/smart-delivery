@@ -8,11 +8,8 @@ asyncpg==0.30.0
 psycopg2-binary==2.9.10
 alembic==1.15.2
 python-jose==3.4.0
-passlib==1.7.4
-bcrypt==4.3.0
 python-dotenv==1.1.0
 email_validator==2.2.0
-confluent-kafka==2.9.0
 pytest==8.3.5
 pytest-asyncio==0.26.0
 httpx==0.28.1
@@ -23,3 +20,8 @@ joblib==1.4.2
 pydantic==2.11.1
 python-dateutil==2.9.0.post0
 requests==2.32.3
+avro==1.11.3
+passlib[bcrypt]
+attrs==22.2.0
+cachetools==5.3.0
+confluent-kafka[avro]==2.9.0

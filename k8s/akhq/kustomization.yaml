@@ -1,0 +1,4 @@
+# k8s/akhq/kustomization.yaml
+resources:
+  - akhq-deployment.yaml
+  - akhq-service.yaml

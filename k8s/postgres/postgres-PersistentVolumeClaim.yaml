@@ -1,0 +1,15 @@
+#postgres PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: delivery-platform
+spec:
+  #specifies the type of access to the volume
+  accessModes:
+    - ReadWriteOnce
+  #specifies the amount of resources being requested
+  resources:
+    requests:
+      storage: 1Gi
+

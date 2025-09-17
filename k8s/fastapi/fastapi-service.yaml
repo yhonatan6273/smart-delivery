@@ -1,0 +1,16 @@
+#this file defines the service for the fastapi application in the kubernetes cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  namespace: delivery-platform
+spec:
+  #defines how the Service is exposed
+  type: LoadBalancer 
+  #this section defines the port mapping rules for the Service.
+  ports:
+    # the port that the Service itself will expose on its internal IP
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: fastapi
