@@ -2,12 +2,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-config
-  namespace: delivery-platform
+  
 data:
   #postgresql configuration
   POSTGRES_DB: "deliveries_database"
   POSTGRES_USER: "postgres"
-  POSTGRES_HOSTNAME: "postgres"
+  POSTGRES_HOSTNAME: "postgres-service"
   POSTGRES_PORT: "5432"
 
   #kafka and schema registry configuration

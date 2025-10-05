@@ -7,8 +7,6 @@ kind: Deployment
 #the information that identifies the object, like its name and namespace.
 metadata:
   name: fastapi-deployment
-  namespace: delivery-platform
-#describes the desired state for the Deployment
 spec:
   replicas: 1
   selector:
@@ -22,13 +20,17 @@ spec:
       containers:
         - name: fastapi
           image: smart-delivery-src:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          
+          command: ["uvicorn","src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+          
           ports:
             - containerPort: 8000
           envFrom:
             - configMapRef:
                 name: app-config
           env:
+           
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

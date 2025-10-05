@@ -22,6 +22,8 @@ Thumbs.db
 
 #env files
 .env
+.env.local
+.env.docker
 
 #alembic
 alembic/versions/*.pyc
@@ -38,3 +40,6 @@ pytest_cache/
 #logs
 *.log
 logs/
+
+# Ignore Kubernetes secrets file
+k8s/secrets.yaml

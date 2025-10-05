@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel,Field
-from typing import  Literal
+from typing import  Literal,Optional
 
 
 class DeliveryBase(BaseModel):
@@ -47,6 +47,7 @@ class DeliveryGetOutput(BaseModel):
     manager_phone:str
     status:str
     created_at: datetime
+    predicted_eta_minutes: Optional[float] = None
 
     class Config:
         from_attributes = True

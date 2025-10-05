@@ -1,7 +1,8 @@
 from src.db.database import Base
-from sqlalchemy import Column, String,Integer,Enum,ForeignKey
+from sqlalchemy import Column, String,Integer,Enum,ForeignKey,Float
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+
 
 
 class Delivery(Base):
@@ -15,8 +16,9 @@ class Delivery(Base):
     manager_phone=Column(String,nullable=False)
     delivery_type=Column(String,nullable=False)
     status=Column(Enum("delivered", "in-transit", "approve",name="delivery_status"),nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)           #on which user the delivery belongs to
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
+    predicted_eta_minutes = Column(Float, nullable=True)
     
 
 
@@ -30,5 +32,6 @@ class User(Base):
     password=Column(String,nullable=False)
     role = Column(String, nullable=False, server_default="user")
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
+
 
 
