@@ -10,3 +10,7 @@ app.include_router(maps.router)
 app.include_router(users.router)
 app.include_router(delivery.router)
 app.include_router(login.router)
+
+@app.get("/")
+def root():
+    return{"message":"welcome to the smart delivery app"}

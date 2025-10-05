@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: schema-registry-deployment
-  namespace: delivery-platform
 spec:
   replicas: 1
   selector:
@@ -15,15 +14,11 @@ spec:
     spec:
       containers:
         - name: schema-registry
-          image: bitnami/schema-registry:latest
+          image: confluentinc/cp-schema-registry:7.6.1
           ports:
             - containerPort: 8081
           env:
-            - name: SCHEMA_REGISTRY_KAFKA_BROKERS
-              value: "PLAINTEXT://kafka-service:9092"
             - name: SCHEMA_REGISTRY_HOST_NAME
               value: "schema-registry-service"
-            - name: SCHEMA_REGISTRY_DEBUG
-              value: "false"
-            - name: SCHEMA_REGISTRY_AVRO_COMPATIBILY_LEVEL
-              value: "NONE"
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: "PLAINTEXT://kafka-service:9092"

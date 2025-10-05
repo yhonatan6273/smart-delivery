@@ -1,4 +1,7 @@
-# k8s/akhq/kustomization.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
   - akhq-deployment.yaml
   - akhq-service.yaml

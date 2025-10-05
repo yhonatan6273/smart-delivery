@@ -12,9 +12,25 @@ load_dotenv()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+    
 db_url = os.getenv("DATABASE_URL")
 if db_url and db_url.strip():
     config.set_main_option("sqlalchemy.url", db_url)
+else:
+    # Build database URL from environment variables for Kubernetes compatibility
+    db_user = os.getenv("POSTGRES_USER")
+    db_password = os.getenv("POSTGRES_PASSWORD")
+    db_hostname = os.getenv("POSTGRES_HOSTNAME")
+    db_port = os.getenv("POSTGRES_PORT")
+    db_name = os.getenv("POSTGRES_DB")
+
+    # Only construct the URL if all parts are available
+    if all([db_user, db_password, db_hostname, db_port, db_name]):
+        database_url = f"postgresql://{db_user}:{db_password}@{db_hostname}:{db_port}/{db_name}"
+        # Override the sqlalchemy.url from alembic.ini with the one we just built
+        config.set_main_option("sqlalchemy.url", database_url)
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

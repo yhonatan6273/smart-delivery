@@ -14,6 +14,3 @@ COPY . .
 
 #expose the application port
 EXPOSE 8000
-
-#start the application
-CMD [ "uvicorn","src.main:app", "--host", "0.0.0.0", "--port", "8000"]
