@@ -1,0 +1,13 @@
+name: build and deploy code
+
+on: [push, pull_request]
+    
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v5
+    
+      
+      
