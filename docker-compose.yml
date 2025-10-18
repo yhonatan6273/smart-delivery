@@ -22,7 +22,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 90s
 
   consumer:
     #build the image using the Dockerfile in the current directory
@@ -75,8 +75,6 @@ services:
         condition: service_healthy
       fast-data-dev:
         condition: service_healthy
-    
-
     ports:
       - "8000:8000"
     volumes:
