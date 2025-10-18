@@ -113,6 +113,7 @@ def update_delivery(id:int, delivery: deliveries.DeliveryUpdate, db: Session= De
     delivery_query=db.query(models.Delivery).filter(models.Delivery.id==id)
     existing_delivery = delivery_query.first()
     
+    
     if existing_delivery is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Delivery with id: {id} not found")
 
@@ -127,6 +128,8 @@ def update_delivery(id:int, delivery: deliveries.DeliveryUpdate, db: Session= De
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="status didnt changed, you can change only to status 'delivered' or 'approve'")
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="status didnt changed, you can change only to status 'in-transit' or 'approve'")
+    
+        
 
     delivery_query.update(delivery.model_dump(),synchronize_session=False)
     db.commit()
@@ -142,8 +145,8 @@ def update_delivery(id:int, delivery: deliveries.DeliveryUpdate, db: Session= De
         "destination_address": existing_delivery.customer_address,
         "delivery_type": existing_delivery.delivery_type,
         "status": existing_delivery.status,
-        "hour_changed": datetime.now().hour,
-        "day_changed": datetime.now().weekday()
+        "hour_of_day": datetime.now().hour,
+        "day_of_week": datetime.now().weekday()
     }
 
     

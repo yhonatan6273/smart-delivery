@@ -4,7 +4,7 @@ from typing import  Literal,Optional
 
 
 class DeliveryBase(BaseModel):
-    customer_phone:str=Field(...,pattern=r'^\+?\d{10,15}$',title="phone number",examples=["+254712345678","+254712345678"])
+    customer_phone:str=Field(...,pattern=r'^\+?\d{9,15}$',title="phone number",examples=["+254712345678","+254712345678"])
     customer_id:str=Field(...,pattern=r'^\d{7,11}$',title="id",examples=["123456789","1234567890"])
     customer_name:str=Field(...,min_length=2,max_length=100)
     customer_address: str = Field(..., min_length=2, max_length=100)
@@ -25,6 +25,7 @@ class DeliveryUpdate(BaseModel):
 
 class DeliveryPostOutput(BaseModel):
     id: int
+    customer_id: str
     delivery_type: str
     customer_phone: str
     customer_name: str
@@ -40,6 +41,7 @@ class DeliveryPostOutput(BaseModel):
 
 class DeliveryGetOutput(BaseModel):
     id:int
+    customer_id: str
     delivery_type: str
     customer_phone:str
     customer_name: str

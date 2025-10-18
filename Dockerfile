@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 COPY requirements.txt ./
 
 #read the requirements.txt file that was just copied and installing all the specified Python libraries
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt 
 
 #copy the application code from local machine
 COPY . . 
