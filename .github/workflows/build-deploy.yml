@@ -33,7 +33,7 @@ jobs:
           --health-retries 5
 
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: pulling git repo
         uses: actions/checkout@v5
