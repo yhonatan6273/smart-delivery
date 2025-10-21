@@ -19,6 +19,7 @@ jobs:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
       KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
     services:
       postgres:
@@ -46,6 +47,14 @@ jobs:
           KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
           KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
           CLUSTER_ID: 'ci-cluster-id'
+      schema-registry: # <-- NEW SERVICE
+        image: confluentinc/cp-schema-registry:latest
+        ports:
+          - 8081:8081
+        env:
+          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9092'
+          SCHEMA_REGISTRY_HOST_NAME: 'schema-registry'
+          SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
 
 
     runs-on: ubuntu-latest
