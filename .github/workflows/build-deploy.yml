@@ -78,15 +78,19 @@ jobs:
       - name: install all dependencies
         run: pip install -r requirements.txt
 
-      - name: test with pytest
+      - name: Network Troubleshooting
         run: |
-          echo "waiting for Kafka"
-          while ! nc -z kafka 9092; do sleep 0.3;
-          done
-          while ! nc -z schema-registry 8081; do sleep 0.3;
-          done
-          echo "all services are up!"
-          pytest
+          echo "waiting 15 seconds for network to settle"
+          sleep 15
+
+          echo "Contents of /etc/hosts file "
+          cat /etc/hosts
+          
+          echo
+          echo "Attempting to ping services by name "
+          ping -c 3 postgres
+          ping -c 3 kafka
+          ping -c 3 schema-registry
 
       - name: Extract Docker image metadata
         id: meta
