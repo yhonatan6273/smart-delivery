@@ -79,13 +79,21 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run Tests with Pytest
         run: |
-          echo "Waiting for services..."
-          # Wait for services on localhost
-          while ! nc -z localhost 5432; do sleep 0.1; done; # Check Postgres
-          while ! nc -z localhost 9092; do sleep 0.1; done; # Check Kafka
-          while ! nc -z localhost 8081; do sleep 0.1; done; # Check Schema Registry
-          echo "All services are up!"
+          echo "waiting for services"
           
+          echo "1. waiting for Postgres (5432)"
+          while ! nc -z localhost 5432; do sleep 0.1; done;
+          echo "Postgres is UP!"
+
+          echo "2. waiting for Kafka (9092)"
+          while ! nc -z localhost 9092; do sleep 0.1; done;
+          echo "Kafka is UP!"
+
+          echo "3. waiting for Schema Registry (8081)"
+          while ! nc -z localhost 8081; do sleep 0.1; done;
+          echo "Schema Registry is UP!"
+
+          echo "all services are up! Running tests"
           pytest
 
       - name: Extract Docker image metadata
