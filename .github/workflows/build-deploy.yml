@@ -96,6 +96,16 @@ jobs:
 
           echo "all services are up! Running tests"
           pytest
+      - name: Debug Container Logs
+        if: always()
+        run: |
+          echo "docker container status"
+          docker ps -a
+          echo "kafka container logs "
+          docker logs $(docker ps -a --filter "ancestor=confluentinc/cp-kafka" --format "{{.ID}}") || echo "Kafka logs not found."
+
+          echo "Schema Registry logs"
+          docker logs $(docker ps -a --filter "ancestor=confluentinc/cp-schema-registry" --format "{{.ID}}") || echo "Schema Registry logs not found."
 
       - name: Extract Docker image metadata
         id: meta
