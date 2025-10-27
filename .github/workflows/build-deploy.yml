@@ -46,7 +46,7 @@ jobs:
           KAFKA_PROCESS_ROLES: 'broker,controller'
           KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
           KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
-          CLUSTER_ID: 'ci-cluster-id'
+          CLUSTER_ID: 'SQwXA7BtSL6CKmsooAqGwA'
       schema-registry: 
         image: confluentinc/cp-schema-registry:latest
         ports:
@@ -78,6 +78,7 @@ jobs:
       - name: install all dependencies
         run: pip install -r requirements.txt
       - name: Run Tests with Pytest
+        timeout-minutes: 2
         run: |
           echo "waiting for services"
           
