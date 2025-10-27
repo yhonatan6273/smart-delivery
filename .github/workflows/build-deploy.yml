@@ -8,7 +8,7 @@ jobs:
       name: testing
     env:
       POSTGRES_PORT: 5432
-      POSTGRES_HOSTNAME: postgres
+      POSTGRES_HOSTNAME: localhost
       POSTGRES_DB: ${{secrets.POSTGRES_DB}}
       POSTGRES_USER: ${{secrets.POSTGRES_USER}}
       POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
@@ -16,10 +16,10 @@ jobs:
       ALGORITHM: ${{secrets.ALGORITHM}}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
       GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
       KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
       KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
-      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      SCHEMA_REGISTRY_URL: http://localhost:8081
 
     services:
       postgres:
@@ -77,20 +77,16 @@ jobs:
 
       - name: install all dependencies
         run: pip install -r requirements.txt
-
-      - name: Network Troubleshooting
+      - name: Run Tests with Pytest
         run: |
-          echo "waiting 15 seconds for network to settle"
-          sleep 15
-
-          echo "Contents of /etc/hosts file "
-          cat /etc/hosts
+          echo "Waiting for services..."
+          # Wait for services on localhost
+          while ! nc -z localhost 5432; do sleep 0.1; done; # Check Postgres
+          while ! nc -z localhost 9092; do sleep 0.1; done; # Check Kafka
+          while ! nc -z localhost 8081; do sleep 0.1; done; # Check Schema Registry
+          echo "All services are up!"
           
-          echo
-          echo "Attempting to ping services by name "
-          ping -c 3 postgres
-          ping -c 3 kafka
-          ping -c 3 schema-registry
+          pytest
 
       - name: Extract Docker image metadata
         id: meta
