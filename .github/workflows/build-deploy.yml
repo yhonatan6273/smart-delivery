@@ -53,9 +53,11 @@ jobs:
         ports:
           - 8081:8081
         env:
-          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'localhost:9092'
+          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9092'
           SCHEMA_REGISTRY_HOST_NAME: 'schema-registry'
           SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
+          #timeout to 2 min
+          SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS: 120000
 
 
     runs-on: ubuntu-latest
@@ -79,7 +81,7 @@ jobs:
       - name: install all dependencies
         run: pip install -r requirements.txt
       - name: Run Tests with Pytest
-        timeout-minutes: 2
+        timeout-minutes: 4
         run: |
           echo "waiting for services"
           
@@ -93,8 +95,8 @@ jobs:
 
           echo "3. waiting for schema registry (8081) to be healthy"
           until curl -f -s "http://localhost:8081/subjects"; do
-            echo "schema registry is not ready yet sleeping 2s."
-            sleep 2
+            echo "schema registry is not ready yet sleeping 10s."
+            sleep 10
           done
           echo "schema registry is UP!"
 
