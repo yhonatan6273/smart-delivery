@@ -91,14 +91,18 @@ jobs:
           while ! nc -z localhost 9092; do sleep 0.1; done;
           echo "Kafka is UP!"
 
-          echo "3. waiting for Schema Registry (8081)"
-          while ! nc -z localhost 8081; do sleep 0.1; done;
-          echo "Schema Registry is UP!"
+          echo "3. waiting for schema registry (8081) to be healthy"
+          until curl -f -s "http://localhost:8081/subjects"; do
+            echo "schema registry is not ready yet sleeping 2s."
+            sleep 2
+          done
+          echo "schema registry is UP!"
 
-          echo "all services are up! Running tests"
+          echo "all services are up! running tests."
+
           pytest
       - name: Debug Container Logs
-        if: always()
+        if: failure()
         run: |
           echo "docker container status"
           docker ps -a
