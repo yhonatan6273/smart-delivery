@@ -35,29 +35,22 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      kafka:
-        image: confluentinc/cp-kafka:latest
+      kafka-stack:
+        image: lensesio/fast-data-dev:latest
         ports:
-          - 9092:9092
+          - 9092:9092  # Kafka Broker
+          - 8081:8081  # Schema Registry
         env:
-          KAFKA_NODE_ID: 1
-          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
-          KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093'
-          KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
-          KAFKA_PROCESS_ROLES: 'broker,controller'
-          KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-          KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
-          CLUSTER_ID: 'SQwXA7BtSL6CKmsooAqGwA'
-      schema-registry: 
-        image: confluentinc/cp-schema-registry:latest
-        ports:
-          - 8081:8081
-        env:
-          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9092'
-          SCHEMA_REGISTRY_HOST_NAME: 'schema-registry'
-          SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
-        
-          SCHEMA_REGISTRY_KAFKA_GROUP_LEADER_ELECTION_TIMEOUT_MS: 120000
+          ADV_HOST: localhost 
+          RUN_AS_USER: "root"
+          TOPIC_RECREATE: "1"
+
+        options: >-
+          --health-cmd "curl -f -s http://localhost:8081/subjects"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15 # נותן לזה קצת יותר זמן לעלות
+          --health-start-period 30s # נותן 30 שניות ראשוניות להתנעה
 
     runs-on: ubuntu-latest
     steps:
@@ -79,40 +72,26 @@ jobs:
 
       - name: install all dependencies
         run: pip install -r requirements.txt
+
       - name: Run Tests with Pytest
         timeout-minutes: 4
         run: |
-          echo "waiting for services"
-          
-          echo "1. waiting for Postgres (5432)"
-          while ! nc -z localhost 5432; do sleep 0.1; done;
-          echo "Postgres is UP!"
-
-          echo "2. waiting for Kafka (9092)"
-          while ! nc -z localhost 9092; do sleep 0.1; done;
-          echo "Kafka is UP!"
-
-          echo "3. waiting for schema registry (8081) to be healthy"
-          until curl -f -s "http://localhost:8081/subjects"; do
-            echo "schema registry is not ready yet sleeping 10s."
-            sleep 10
-          done
-          echo "schema registry is UP!"
-
-          echo "all services are up! running tests."
-
+          echo "all services are healthy running tests."
           pytest
+
       - name: Debug Container Logs
         if: failure()
         run: |
           echo "docker container status"
           docker ps -a
-          echo "kafka container logs "
-          docker logs $(docker ps -a --filter "ancestor=confluentinc/cp-kafka" --format "{{.ID}}") || echo "Kafka logs not found."
+          
+          echo "kafka Stack (fast-data-dev) container logs "
+          docker logs $(docker ps -a --filter "ancestor=lensesio/fast-data-dev" --format "{{.ID}}") || echo "kafka Stack logs not found."
 
-          echo "Schema Registry logs"
-          docker logs $(docker ps -a --filter "ancestor=confluentinc/cp-schema-registry" --format "{{.ID}}") || echo "Schema Registry logs not found."
-
+          echo "postgres container logs"
+          docker logs $(docker ps -a --filter "ancestor=postgres" --format "{{.ID}}") || echo "Postgres logs not found."
+          
+          
       - name: Extract Docker image metadata
         id: meta
         uses: docker/metadata-action@v5
