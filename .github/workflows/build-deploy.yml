@@ -56,9 +56,8 @@ jobs:
           SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9092'
           SCHEMA_REGISTRY_HOST_NAME: 'schema-registry'
           SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
-          #timeout to 2 min
-          SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS: 120000
-
+        
+          SCHEMA_REGISTRY_KAFKA_GROUP_LEADER_ELECTION_TIMEOUT_MS: 120000
 
     runs-on: ubuntu-latest
     steps:
