@@ -115,23 +115,23 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
        #smoke test will run the container and check if the /docs endpoint is reachable
-      - name: run smoke test
+      - name: run smoke test (debugging)
         run: |
+          echo "starting container"
           docker run -d --name smart-delivery-test -p 8000:8000 ${{ steps.meta.outputs.tags }}
-          echo "waiting for application to become healthy at http://localhost:8000/docs"
-          timeout=60
-          #loop to wait for the application to be ready
-          while ! curl -s -f http://localhost:8000/docs > /dev/null; do
-            timeout=$((timeout-5)) 
-            if [ $timeout -le 0 ]; then
-              echo "error: Timed out waiting for application."
-              echo "container Logs (smart-delivery-test) "
-              docker logs smart-delivery-test  
-              exit 1
-            fi
-            echo "still waiting ($timeout seconds left)"
-            sleep 10
-          done
+          
+          echo "waiting 20 seconds for container to boot or crash"
+          sleep 20 
+          echo "forcing container logs"
+          docker logs smart-delivery-test
+
+          echo "checking container status"
+          docker ps -a -f "name=smart-delivery-test"
+
+          echo "forcing failure to see logs"
+          exit 1
+    
+          
 
       - name: push Docker Image to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
