@@ -14,3 +14,6 @@ COPY . .
 
 #expose the application port
 EXPOSE 8000
+
+#command to run the application using Uvicorn ASGI server
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
