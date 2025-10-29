@@ -118,10 +118,25 @@ jobs:
       - name: run smoke test (debugging)
         run: |
           echo "starting container"
-          docker run -d --name smart-delivery-test -p 8000:8000 ${{ steps.meta.outputs.tags }}
+          docker run -d --name smart-delivery-test -p 8000:8000 \
+            -e POSTGRES_PORT=${POSTGRES_PORT} \
+            -e POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME} \
+            -e POSTGRES_DB=${POSTGRES_DB} \
+            -e POSTGRES_USER=${POSTGRES_USER} \
+            -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+            -e SECRET_KEY=${SECRET_KEY} \
+            -e ALGORITHM=${ALGORITHM} \
+            -e ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES} \
+            -e GOOGLE_API_KEY=${GOOGLE_API_KEY} \
+            -e KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS} \
+            -e KAFKA_TOPIC_CALCULATE_ROUTE=${KAFKA_TOPIC_CALCULATE_ROUTE} \
+            -e KAFKA_CONSUMER_GROUP=${KAFKA_CONSUMER_GROUP} \
+            -e SCHEMA_REGISTRY_URL=${SCHEMA_REGISTRY_URL} \
+            ${{ steps.meta.outputs.tags }}
           
           echo "waiting 20 seconds for container to boot or crash"
           sleep 20 
+          
           echo "forcing container logs"
           docker logs smart-delivery-test
 
@@ -130,7 +145,6 @@ jobs:
 
           echo "forcing failure to see logs"
           exit 1
-    
           
 
       - name: push Docker Image to Docker Hub
