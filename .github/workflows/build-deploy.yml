@@ -115,36 +115,24 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
        #smoke test will run the container and check if the /docs endpoint is reachable
-      - name: run smoke test (debugging)
+      - name: Run Smoke Test
         run: |
-          echo "starting container"
-          docker run -d --name smart-delivery-test -p 8000:8000 \
-            -e POSTGRES_PORT=${POSTGRES_PORT} \
-            -e POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME} \
-            -e POSTGRES_DB=${POSTGRES_DB} \
-            -e POSTGRES_USER=${POSTGRES_USER} \
-            -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-            -e SECRET_KEY=${SECRET_KEY} \
-            -e ALGORITHM=${ALGORITHM} \
-            -e ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES} \
-            -e GOOGLE_API_KEY=${GOOGLE_API_KEY} \
-            -e KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS} \
-            -e KAFKA_TOPIC_CALCULATE_ROUTE=${KAFKA_TOPIC_CALCULATE_ROUTE} \
-            -e KAFKA_CONSUMER_GROUP=${KAFKA_CONSUMER_GROUP} \
-            -e SCHEMA_REGISTRY_URL=${SCHEMA_REGISTRY_URL} \
-            ${{ steps.meta.outputs.tags }}
+          echo "waiting for application to become healthy at http://localhost:8000/docs"
+          timeout=90
           
-          echo "waiting 20 seconds for container to boot or crash"
-          sleep 20 
+          while ! curl -s -f http://localhost:8000/docs > /dev/null; do
+            timeout=$((timeout-5))
+            if [ $timeout -le 0 ]; then
+              echo "error: Timed out waiting for application."
+              echo "container logs (smart-delivery-test) are:"
+              docker logs smart-delivery-test
+              exit 1
+            fi
+            echo "still waiting ($timeout seconds left)"
+            sleep 5
+          done
           
-          echo "forcing container logs"
-          docker logs smart-delivery-test
-
-          echo "checking container status"
-          docker ps -a -f "name=smart-delivery-test"
-
-          echo "forcing failure to see logs"
-          exit 1
+          echo "application is healthy! smoke test passed"
           
 
       - name: push Docker Image to Docker Hub
