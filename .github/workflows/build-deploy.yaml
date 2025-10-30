@@ -62,6 +62,16 @@ jobs:
       - name: lint dockerfile
         run: docker run --rm -v "$(pwd):/work" -w /work hadolint/hadolint hadolint Dockerfile
 
+      - name: Validate Kubernetes YAMLs
+        uses: docker://ghcr.io/yannh/kubeconform:v0.7.0 
+        with:
+          entrypoint: '/kubeconform'
+          args: > 
+            -summary
+            -strict
+            -ignore-filename-pattern kustomization.yaml
+            ./k8s/
+          
       - name: install python version 3.12.8
         uses: actions/setup-python@v6 
         with:
