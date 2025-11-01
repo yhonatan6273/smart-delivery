@@ -30,6 +30,20 @@ jobs:
   test_app:
     name: application tests
     runs-on: ubuntu-latest
+    env:
+          POSTGRES_PORT: 5432
+          POSTGRES_HOSTNAME: localhost
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          SECRET_KEY: ${{secrets.SECRET_KEY}}
+          ALGORITHM: ${{secrets.ALGORITHM}}
+          ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+          GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
+          KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+          SCHEMA_REGISTRY_URL: http://localhost:8081
     services:
       postgres:
         image: postgres
@@ -82,10 +96,15 @@ jobs:
       - name: run tests with pytest
         #run all tests except the slow ML tests
         run: pytest -m "not ml"
-        env:
+        
+  #this job is to run only the ML test
+  test_ml:
+    name: ML tests
+    runs-on: ubuntu-latest
+    env:
           POSTGRES_PORT: 5432
           POSTGRES_HOSTNAME: localhost
-          POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
           SECRET_KEY: ${{secrets.SECRET_KEY}}
@@ -96,10 +115,36 @@ jobs:
           KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
           KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
           SCHEMA_REGISTRY_URL: http://localhost:8081
-  #this job is to run only the ML test
-  test_ml:
-    name: ML tests
-    runs-on: ubuntu-latest
+  #this
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      kafka-stack:
+        image: lensesio/fast-data-dev:latest
+        ports:
+          - 9092:9092 
+          - 8081:8081 
+        env:
+          ADV_HOST: localhost 
+          RUN_AS_USER: "root"
+          TOPIC_RECREATE: "1"
+        options: >-
+          --health-cmd "curl -f -s http://localhost:8081/subjects"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15 
+          --health-start-period 30s
     steps:
       - name: pulling git repo
         uses: actions/checkout@v5
@@ -119,7 +164,7 @@ jobs:
 
       - name: run ML tests (pytest)
         run: pytest -m "ml"
-        
+       
   #this job is for building, smoke testing, and pushing the docker image and he is depend on the success of the previous jobs      
   build_and_push:
     name: build, smoke Test, and push
@@ -131,7 +176,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
-          POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
         ports:
           - 5432:5432 # Postgres
@@ -192,7 +237,7 @@ jobs:
           docker run -d --name smart-delivery-test -p 8000:8000 \
             -e POSTGRES_PORT=5432 \
             -e POSTGRES_HOSTNAME=localhost \
-            -e POSTGRES_DB=${{secrets.POSTGRES_DB}}_test \
+            -e POSTGRES_DB=${{secrets.POSTGRES_DB}} \
             -e POSTGRES_USER=${{secrets.POSTGRES_USER}} \
             -e POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}} \
             -e SECRET_KEY=${{secrets.SECRET_KEY}} \
