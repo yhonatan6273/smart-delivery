@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error
 #this test will load the trained ML model and a test dataset and will verify that the model mean absolute error is below a certain threshold.
 @pytest.mark.ml
-def test_model_accuracy_is_above_threshold():
+def test_model_mae_below_threshold():
     model_path = "ML/artifacts/eta_predictor_model.joblib"
     #load the trained model (that the notebook created)
     #change the path accordingly
@@ -23,8 +23,8 @@ def test_model_accuracy_is_above_threshold():
     y_pred = loaded_model.predict(X_test)
     #calculate the mean absolute error (MAE) between the predicted and actual values
     mae = mean_absolute_error(y_test, y_pred) 
-    #define an acceptable error threshold 
-    maximum_error_threshold = 10.0
+    #define an acceptable error threshold (10 minutes in this case) 
+    maximum_error_threshold = 10.0 
     
     #assert that the MAE is below the threshold 
     #if not, the test will fail and print an error message
