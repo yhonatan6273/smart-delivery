@@ -115,7 +115,7 @@ jobs:
           KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
           KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
           SCHEMA_REGISTRY_URL: http://localhost:8081
-  #this
+  
     services:
       postgres:
         image: postgres
@@ -149,14 +149,17 @@ jobs:
       - name: pulling git repo
         uses: actions/checkout@v5
         with: 
-          lfs: true 
-      - name: debug git lfs
+          lfs: true
+
+      - name: Force Git LFS Pull
         run: |
-          echo "running git lfs ls-files"
-          git lfs ls-files
-          echo "checking file permissions and size in ML/data"
+          echo "forcing git lfs pull"
+          git lfs pull
+          
+          echo "checking file size (after pull)"
           ls -l ML/data/
-          echo "peeking inside the CSV file (first 5 lines)"
+
+          echo "peeking inside CSV (after pull)"
           cat ML/data/test_set_X.csv | head -n 5
 
       - name: install python version 3.12.8
