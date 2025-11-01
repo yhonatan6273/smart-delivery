@@ -152,16 +152,8 @@ jobs:
           lfs: true
 
       - name: Force Git LFS Pull
-        run: |
-          echo "forcing git lfs pull"
-          git lfs pull
+        run: git lfs pull
           
-          echo "checking file size (after pull)"
-          ls -l ML/data/
-
-          echo "peeking inside CSV (after pull)"
-          cat ML/data/test_set_X.csv | head -n 5
-
       - name: install python version 3.12.8
         uses: actions/setup-python@v6 
         with:
@@ -182,6 +174,20 @@ jobs:
     runs-on: ubuntu-latest
     #the dependency on the previous jobs
     needs: [linting, test_app, test_ml]
+    env:
+      POSTGRES_PORT: 5432
+      POSTGRES_HOSTNAME: localhost
+      POSTGRES_DB: ${{secrets.POSTGRES_DB}} #שים לב - בלי "_test"
+      POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+      POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+      SECRET_KEY: ${{secrets.SECRET_KEY}}
+      ALGORITHM: ${{secrets.ALGORITHM}}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+      GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
+      KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+      SCHEMA_REGISTRY_URL: http://localhost:8081
     services:
       postgres:
         image: postgres
