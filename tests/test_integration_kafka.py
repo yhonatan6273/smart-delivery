@@ -19,7 +19,7 @@ def test_create_delivery_sends_kafka_message(authorized_client, avro_consumer, t
     }
     response = authorized_client.post("/deliveries", json=api_payload)
     assert response.status_code == 201
-    
+    #check for the new message in the kafka topic (wait in the topic for up to 10 seconds)
     msg = avro_consumer.poll(timeout=10.0)
     assert msg is not None, "consumer did not receive any message."
     assert not msg.error(), f"consumer received an error: {msg.error()}"
