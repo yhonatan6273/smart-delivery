@@ -150,6 +150,14 @@ jobs:
         uses: actions/checkout@v5
         with: 
           lfs: true 
+      - name: debug git lfs
+        run: |
+          echo "running git lfs ls-files"
+          git lfs ls-files
+          echo "checking file permissions and size in ML/data"
+          ls -l ML/data/
+          echo "peeking inside the CSV file (first 5 lines)"
+          cat ML/data/test_set_X.csv | head -n 5
 
       - name: install python version 3.12.8
         uses: actions/setup-python@v6 
