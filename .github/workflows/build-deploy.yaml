@@ -3,30 +3,54 @@ name: build and deploy code
 on: [push, pull_request]
     
 jobs:
-  build:
-    environment:
-      name: testing
-    env:
-      POSTGRES_PORT: 5432
-      POSTGRES_HOSTNAME: localhost
-      POSTGRES_DB: ${{secrets.POSTGRES_DB}}
-      POSTGRES_USER: ${{secrets.POSTGRES_USER}}
-      POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-      SECRET_KEY: ${{secrets.SECRET_KEY}}
-      ALGORITHM: ${{secrets.ALGORITHM}}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
-      GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
-      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-      KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
-      KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
-      SCHEMA_REGISTRY_URL: http://localhost:8081
+  #this job is for quick static and application tests  
+  linting:
+    name: linting and validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v5
+        with: 
+          lfs: true
 
+      - name: lint dockerfile
+        run: docker run --rm -v "$(pwd):/work" -w /work hadolint/hadolint hadolint Dockerfile
+
+      - name: validate kubernetes YAMLs
+        uses: docker://ghcr.io/yannh/kubeconform:v0.7.0
+        with:
+          entrypoint: '/kubeconform'
+          args: >
+            -summary
+            -strict
+            -ignore-filename-pattern kustomization.yaml
+            ./k8s/
+
+  #this job is to run quick tests on the application with the test services (api, db, kafka)
+  test_app:
+    name: application tests
+    runs-on: ubuntu-latest
+    env:
+          POSTGRES_PORT: 5432
+          POSTGRES_HOSTNAME: localhost
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          SECRET_KEY: ${{secrets.SECRET_KEY}}
+          ALGORITHM: ${{secrets.ALGORITHM}}
+          ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+          GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
+          KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+          SCHEMA_REGISTRY_URL: http://localhost:8081
     services:
       postgres:
         image: postgres
         env:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
           POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
         ports:
           - 5432:5432
         #set health checks to wait until postgres has started
@@ -38,13 +62,13 @@ jobs:
       kafka-stack:
         image: lensesio/fast-data-dev:latest
         ports:
-          - 9092:9092  # Kafka Broker
-          - 8081:8081  # Schema Registry
+          - 9092:9092 # Kafka Broker
+          - 8081:8081 # Schema Registry
         env:
           ADV_HOST: localhost 
           RUN_AS_USER: "root"
           TOPIC_RECREATE: "1"
-
+        #set health checks to wait until kafka stack has started
         options: >-
           --health-cmd "curl -f -s http://localhost:8081/subjects"
           --health-interval 10s
@@ -52,25 +76,83 @@ jobs:
           --health-retries 15 
           --health-start-period 30s 
 
-    runs-on: ubuntu-latest
     steps:
       - name: pulling git repo
         uses: actions/checkout@v5
         with: 
           lfs: true
 
-      - name: lint dockerfile
-        run: docker run --rm -v "$(pwd):/work" -w /work hadolint/hadolint hadolint Dockerfile
-
-      - name: Validate Kubernetes YAMLs
-        uses: docker://ghcr.io/yannh/kubeconform:v0.7.0 
+      - name: install python version 3.12.8
+        uses: actions/setup-python@v6 
         with:
-          entrypoint: '/kubeconform'
-          args: > 
-            -summary
-            -strict
-            -ignore-filename-pattern kustomization.yaml
-            ./k8s/
+          python-version: '3.12.8'
+
+      - name: update pip
+        run: python -m pip install --upgrade pip
+
+      - name: install all dependencies
+        run: pip install -r requirements.txt
+
+      - name: run tests with pytest
+        #run all tests except the slow ML tests
+        run: pytest -m "not ml"
+        
+  #this job is to run only the ML test
+  test_ml:
+    name: ML tests
+    runs-on: ubuntu-latest
+    env:
+          POSTGRES_PORT: 5432
+          POSTGRES_HOSTNAME: localhost
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          SECRET_KEY: ${{secrets.SECRET_KEY}}
+          ALGORITHM: ${{secrets.ALGORITHM}}
+          ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+          GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
+          KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+          SCHEMA_REGISTRY_URL: http://localhost:8081
+  
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      kafka-stack:
+        image: lensesio/fast-data-dev:latest
+        ports:
+          - 9092:9092 
+          - 8081:8081 
+        env:
+          ADV_HOST: localhost 
+          RUN_AS_USER: "root"
+          TOPIC_RECREATE: "1"
+        options: >-
+          --health-cmd "curl -f -s http://localhost:8081/subjects"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15 
+          --health-start-period 30s
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v5
+        with: 
+          lfs: true
+
+      - name: Force Git LFS Pull
+        run: git lfs pull
           
       - name: install python version 3.12.8
         uses: actions/setup-python@v6 
@@ -83,49 +165,90 @@ jobs:
       - name: install all dependencies
         run: pip install -r requirements.txt
 
-      - name: run Tests with Pytest
-        timeout-minutes: 4
-        run: |
-          echo "all services are healthy running tests."
-          pytest
+      - name: run ML tests (pytest)
+        run: pytest -m "ml"
+       
+  #this job is for building, smoke testing, and pushing the docker image and he is depend on the success of the previous jobs      
+  build_and_push:
+    name: build, smoke Test, and push
+    runs-on: ubuntu-latest
+    #the dependency on the previous jobs
+    needs: [linting, test_app, test_ml]
+    env:
+      POSTGRES_PORT: 5432
+      POSTGRES_HOSTNAME: localhost
+      POSTGRES_DB: ${{secrets.POSTGRES_DB}} #שים לב - בלי "_test"
+      POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+      POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+      SECRET_KEY: ${{secrets.SECRET_KEY}}
+      ALGORITHM: ${{secrets.ALGORITHM}}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+      GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
+      KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+      SCHEMA_REGISTRY_URL: http://localhost:8081
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+        ports:
+          - 5432:5432 # Postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      kafka-stack:
+        image: lensesio/fast-data-dev:latest
+        ports:
+          - 9092:9092 
+          - 8081:8081 
+        env:
+          ADV_HOST: localhost 
+          RUN_AS_USER: "root"
+          TOPIC_RECREATE: "1"
+        options: >-
+          --health-cmd "curl -f -s http://localhost:8081/subjects"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15 
+          --health-start-period 30s 
+    
+    steps:
+      - name: pulling git repo
+        uses: actions/checkout@v5
+        with: 
+          lfs: true
 
-      - name: debug Container Logs
-        if: failure()
-        run: |
-          echo "docker container status"
-          docker ps -a
-          
-          echo "kafka Stack (fast-data-dev) container logs "
-          docker logs $(docker ps -a --filter "ancestor=lensesio/fast-data-dev" --format "{{.ID}}") || echo "kafka Stack logs not found."
-
-          echo "postgres container logs"
-          docker logs $(docker ps -a --filter "ancestor=postgres" --format "{{.ID}}") || echo "Postgres logs not found."
-          
-          
       - name: extract Docker image metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ vars.DOCKER_USERNAME }}/smart-delivery
 
-      - name: log in to Docker Hub
+      - name: log in to docker hub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: set up Docker Buildx
+      - name: set up docker buildx
         uses: docker/setup-buildx-action@v3
 
       - name: build and load Docker image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
-          load: true
-          push: false
+          load: true 
+          push: false 
           tags: ${{ steps.meta.outputs.tags }}
-       #smoke test will run the container and check if the /docs endpoint is reachable
-      - name: Run Smoke Test
+      #smoke test will run the container and check if the /docs endpoint is reachable
+      - name: run smoke test
         run: |
           echo "starting container with all environment variables."
           docker run -d --name smart-delivery-test -p 8000:8000 \
@@ -159,8 +282,7 @@ jobs:
           done
           
           echo "application is healthy! smoke test passed"
-          
 
-      - name: push Docker Image to Docker Hub
+      - name: push docker image to docker hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker push ${{ steps.meta.outputs.tags }}

@@ -19,10 +19,10 @@ services:
     #check if the service is healthy by pinging the schema registry endpoint           
     healthcheck:
       test: ["CMD", "curl", "-f", "http://fast-data-dev:8081"]
-      interval: 10s
-      timeout: 5s
+      interval: 20s
+      timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 180s
 
   consumer:
     #build the image using the Dockerfile in the current directory
