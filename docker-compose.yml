@@ -26,7 +26,8 @@ services:
 
   consumer:
     #build the image using the Dockerfile in the current directory
-    build: .
+    build: 
+      context: ./backend
     container_name: smart-delivery-consumer
     #
     restart: unless-stopped
@@ -37,9 +38,9 @@ services:
       fast-data-dev:
         condition: service_healthy
     env_file:
-      - ./.env.docker 
+      - ./backend/.env.docker 
     #map the current directory to /usr/src/app in the container
-    volumes: ["./:/usr/src/app"]
+    volumes: ["./backend/:/usr/src/app"]
     #set the PYTHONUNBUFFERED environment variable to ensure real-time logging
     environment:
       PYTHONUNBUFFERED: 1
@@ -68,7 +69,8 @@ services:
       
 
   src:
-    build: .
+    build:
+      context: ./backend
     container_name: smart-delivery-api
     depends_on:
       postgres:
@@ -78,9 +80,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./:/usr/src/app
+      - ./backend/:/usr/src/app
     env_file:
-      - ./.env.docker
+      - ./backend/.env.docker
 
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
@@ -93,13 +95,11 @@ services:
     restart: always
     # set shared memory limit when using docker compose
     shm_size: 128mb
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - ./backend/.env.docker
     #check if the service is started and healthy by using pg_isready command
     healthcheck: 
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
