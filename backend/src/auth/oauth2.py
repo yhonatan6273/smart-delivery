@@ -18,7 +18,7 @@ SECRET_KEY =os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")  # Default to HS256 if not set
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)  # Default to 30 minutes if not set
 
-#function to creat a token
+#function to create a token
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
