@@ -6,7 +6,7 @@ import {
   createRoutesFromElements,
   Route
  } from "react-router-dom"
-import React from 'react'
+
 import HomePage from './pages/HomePage';
 import DeliveriesPage from './pages/DeliveriesPage';
 import LoginPage from './pages/LoginPage';
@@ -15,43 +15,10 @@ import AddDeliveryPage from './pages/AddDeliveryPage';
 import MainLayout from './layouts/MainLayout';
 import EditDeliveryPage from './pages/EditDeliveryPage';
 import NotFoundPage from './pages/NotFoundPage';
-
+import { AuthProvider } from './Context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
-  
-  const addLogin = async (loginData) => {
-    
-    const formData = new URLSearchParams();
-    
-    formData.append('username', loginData.email);
-    formData.append('password', loginData.password);
-
-    try {
-      const res = await fetch('http://localhost:8000/login', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!res.ok) {
-        console.error('Login failed! Check credentials.');
-        return null; 
-      }
-
-      const data = await res.json();
-      console.log('Login successful, token:', data.access_token);
-      
-      
-      return data;
-
-    } catch (error) {
-      console.error('Server connection error:', error);
-      return null;
-    }
-  }
-
-
-
-
   const addRegister = async (registerData) => {
     
     try {
@@ -84,22 +51,32 @@ const App = () => {
     createRoutesFromElements(
       <Route path='/' element={<MainLayout />}>
         <Route index element={<HomePage />} />
-        {/* get deliveries */}
-        <Route path='deliveries' element={<DeliveriesPage />} />
         {/* post login */}
-        <Route path='login' element={<LoginPage LoginSubmit={addLogin} />} />
+        <Route path='login' element={<LoginPage  />} />
         {/* post users */}
         <Route path='register' element={<RegisterPage RegisterSubmit={addRegister} />} />
-        {/* post deliveries */}
-        <Route path='add-delivery' element={<AddDeliveryPage />} />
-        {/* put deliveries */}
-        <Route path='edit-delivery/:id' element={<EditDeliveryPage />} />
+        {/* Routers that can be access after login */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/deliveries" element={<DeliveriesPage />} />
+          <Route path="/add-delivery" element={<AddDeliveryPage />} />
+          <Route path="/edit-delivery/:id" element={<EditDeliveryPage />} />
+        </Route>
+        {/* Router for NotFoundPage if the url not leading to any Router*/}
         <Route path='*' element={<NotFoundPage />} />
       </Route>
+      
     )
   );
-
-  return <RouterProvider router={router} />;
+/**
+   *The entire app is wrapped in AuthProvider to make auth state
+   *(isLoggedIn, login, logout) globally available to any component.
+   *The RouterProvider then consumes the router config.
+   */
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 };
 
 export default App

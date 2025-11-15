@@ -1,6 +1,6 @@
 import React from 'react'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = ({RegisterSubmit }) => {
   const [email, setEmail] = useState('')
@@ -59,8 +59,6 @@ const RegisterPage = ({RegisterSubmit }) => {
         <div>
           <input
             type= 'email'
-            id="email"
-            name="email"
             className="border rounded p-2 w-full px-3"
             placeholder='enter your email:'
             value={email}
@@ -72,8 +70,6 @@ const RegisterPage = ({RegisterSubmit }) => {
           <input
             
             type="password"
-            id="password"
-            name="password"
             className="border rounded p-2 w-full px-3"
             placeholder='enter your password:'
             value={password}
