@@ -18,6 +18,10 @@ import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './Context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
+
+
+
+
 const App = () => {
   const addRegister = async (registerData) => {
     
