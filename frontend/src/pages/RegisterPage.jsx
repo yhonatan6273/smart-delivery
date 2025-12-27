@@ -1,11 +1,16 @@
-import React from 'react'
+import { useAuth } from '../Context/AuthContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const RegisterPage = ({RegisterSubmit }) => {
+
+
+
+const RegisterPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('');
+  const { register } = useAuth();
+
   
   const navigate = useNavigate();
   const submitForm = async (e) => {
@@ -29,7 +34,7 @@ const RegisterPage = ({RegisterSubmit }) => {
 
     //basic email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // check if the email that user entered is valid
+    // check if the email that user entered is format valid
       if (!emailRegex.test(email)) {
         setError('Invalid Email Format Please Enter a Valid Email');
         return;
@@ -38,12 +43,14 @@ const RegisterPage = ({RegisterSubmit }) => {
       email,
       password
     }
-    const result= await RegisterSubmit(registerData);
+    const result= await register(registerData);
+    //check if there was an error during registration and if the function ever returned something
     if(result && result.error){
       setError(result.message);
     }
+    //the function returned something and there was no error
     else if(result){
-      // if valid register navigate to deliveries page
+      
       return navigate('/login');
     }
     else{
@@ -56,6 +63,8 @@ const RegisterPage = ({RegisterSubmit }) => {
       <h1 className=" font-bold text-center">RegisterPage</h1>
       <form className="flex flex-col gap-10 bg-gray-200 p-4" onSubmit={submitForm}>
         {error && <p className="text-red-500 text-center font-bold">{error}</p>}
+
+
         <div>
           <input
             type= 'email'
@@ -66,6 +75,7 @@ const RegisterPage = ({RegisterSubmit }) => {
             />
         </div>
           
+
         <div>
           <input
             
@@ -77,7 +87,7 @@ const RegisterPage = ({RegisterSubmit }) => {
             />
         </div>
       
-          <button type="submit" className="text-black   ">
+          <button type="submit" className="w-full !bg-blue-200 text-blue p-3 rounded-md font-semibold hover:!bg-blue-600 disabled:!bg-gray-400">
           Register
         </button>
       </form>

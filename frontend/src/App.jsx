@@ -1,56 +1,22 @@
-
-import Navbar  from './components/Navbar'
-import { 
-  createBrowserRouter,
-  RouterProvider,
-  createRoutesFromElements,
-  Route
- } from "react-router-dom"
-
+import { createBrowserRouter,RouterProvider,createRoutesFromElements, Route} from "react-router-dom"
 import HomePage from './pages/HomePage';
 import DeliveriesPage from './pages/DeliveriesPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AddDeliveryPage from './pages/AddDeliveryPage';
-import MainLayout from './layouts/MainLayout';
+import {MainLayout} from './layouts/MainLayout';
 import EditDeliveryPage from './pages/EditDeliveryPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './Context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-
-
+import {ProtectedRoute} from './components/ProtectedRoute';
+import {AdminRoute} from './components/AdminRoute';
+import ManagerPage from './pages/ManagerPage';
+import{deleteDelivery} from './services/deliveryService';
 
 
 
 const App = () => {
-  const addRegister = async (registerData) => {
-    
-    try {
-      const res = await fetch('http://localhost:8000/users', { 
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(registerData)
-      });
-      if (!res.ok) {
-        const errorData = await res.json()
-        return { error: true, message: errorData.detail };
-      }
-
-      const data = await res.json();
-      console.log('Register Successful:', data);
-      
-      
-      return data;
-
-    } catch (error) {
-      return{error: true, message: 'Error connecting to server try again later'};
-      
-    }
-  }
-
-  
+ 
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path='/' element={<MainLayout />}>
@@ -58,19 +24,20 @@ const App = () => {
         {/* post login */}
         <Route path='login' element={<LoginPage  />} />
         {/* post users */}
-        <Route path='register' element={<RegisterPage RegisterSubmit={addRegister} />} />
+        <Route path='register' element={<RegisterPage  />} />
         {/* Routers that can be access after login */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/deliveries" element={<DeliveriesPage />} />
-          <Route path="/add-delivery" element={<AddDeliveryPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/deliveries" element={<DeliveriesPage deleteDelivery={deleteDelivery} />} />
+        <Route path="/add-delivery" element={<AddDeliveryPage />} />
+        <Route element={<AdminRoute />}>
           <Route path="/edit-delivery/:id" element={<EditDeliveryPage />} />
+          <Route path="/manager" element={<ManagerPage />} />
         </Route>
-        {/* Router for NotFoundPage if the url not leading to any Router*/}
-        <Route path='*' element={<NotFoundPage />} />
       </Route>
-      
-    )
-  );
+      {/* Router for NotFoundPage if the url not leading to any Router*/}
+      <Route path='*' element={<NotFoundPage />} />
+    </Route>
+  ));
 /**
    *The entire app is wrapped in AuthProvider to make auth state
    *(isLoggedIn, login, logout) globally available to any component.
