@@ -28,7 +28,7 @@ def get_user(id:int,db:Session= Depends(get_db)):
 
 
 
-#creat users
+#create users
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=users.UserOutput)
 
 def create_user(user: users.UserCreate, db: Session= Depends(get_db)):
