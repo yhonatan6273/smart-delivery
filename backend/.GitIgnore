@@ -27,6 +27,8 @@ Thumbs.db
 .env.test
 .env.test.docker
 
+
+
 #alembic
 alembic/versions/*.pyc
 alembic/versions/__pycache__/
@@ -44,4 +46,4 @@ pytest_cache/
 logs/
 
 # Ignore Kubernetes secrets file
-k8s/secrets.yaml
+secrets.yaml

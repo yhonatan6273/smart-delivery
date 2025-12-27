@@ -1,11 +1,24 @@
+
 from fastapi import FastAPI
 from src.router import delivery, users,login,maps
 from fastapi.middleware.cors import CORSMiddleware
+from src.kafka.admin import create_topic_init
+from contextlib import asynccontextmanager
 
-app=FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    
+    create_topic_init()
+    yield
+
+
+app=FastAPI(lifespan=lifespan)
 
 origins = [
-    "http://localhost:5173"   
+    "http://localhost:5173",  
+    "http://localhost:3000" 
 ]
 
 #we are allowing cors middleware to allow requests from frontend to backend

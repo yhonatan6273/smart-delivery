@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-consumer-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ml-consumer
+  template:
+    metadata:
+      labels:
+        app: ml-consumer
+    spec:
+      initContainers:
+        - name: init-kafka-topics
+          image: jony6273/smart-delivery:main
+          imagePullPolicy: Always
+
+          command: ["python", "-c", "from src.kafka.admin import create_topic_init; create_topic_init()"]
+          envFrom:
+            - configMapRef:
+                name: app-config
+
+      containers:
+        - name: ml-consumer
+          image: jony6273/smart-delivery:main
+          imagePullPolicy: Always
+          command: ["python", "-m", "src.kafka.ml_consumer"]
+          envFrom:
+            - configMapRef:
+                name: app-config
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_API_KEY
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "50m"
+              memory: "64Mi"

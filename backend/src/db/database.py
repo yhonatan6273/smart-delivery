@@ -17,11 +17,14 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{PO
 
 if not SQLALCHEMY_DATABASE_URL:
     raise Exception("DATABASE_URL not found")
-
+# Engine will manage the connection pool to the database
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# SessionLocal  will create new Session objects when called
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# base will be the base class for all our models
+# he will inherit from all our models
 Base = declarative_base()
-
+#this function will be used as a dependency in the routes to get a database session
 def get_db():
     db = SessionLocal()
     try:

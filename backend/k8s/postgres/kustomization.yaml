@@ -5,4 +5,3 @@ kind: Kustomization
 resources:
   - postgres-statefulset.yaml
   - postgres-service.yaml
-  - postgres-PersistentVolumeClaim.yaml

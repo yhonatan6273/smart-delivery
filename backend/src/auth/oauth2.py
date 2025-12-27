@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 
+#this will extract the token from the request
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -41,7 +42,7 @@ def verify_access_token(token:str, credentials_exception):
 
     return token_data
 
-#function that gives the user his account for the database if the token is valid.
+#function that gives the user account from the database if the token is valid.
 def get_current_user(token:str=Depends(oauth2_scheme),db: Session = Depends(get_db)):
     credentials_exception= HTTPException( status_code=status.HTTP_401_UNAUTHORIZED,
                                           detail="Could not validate credentials",

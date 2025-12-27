@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_error
 #this test will load the trained ML model and a test dataset and will verify that the model mean absolute error is below a certain threshold.
 @pytest.mark.ml
 def test_model_mae_below_threshold():
-    model_path = "ML/artifacts/eta_predictor_model.joblib"
+    model_path = "backend/ML/artifacts/eta_predictor_model.joblib"
     #load the trained model (that the notebook created)
     #change the path accordingly
     try:
@@ -15,8 +15,8 @@ def test_model_mae_below_threshold():
 
     #load the test dataset
     try:
-        X_test = pd.read_csv("ML/data/test_set_X.csv")
-        y_test = pd.read_csv("ML/data/test_set_y.csv")
+        X_test = pd.read_csv("backend/ML/data/test_set_X.csv")
+        y_test = pd.read_csv("backend/ML/data/test_set_y.csv")
     except FileNotFoundError:
         pytest.fail("Test dataset files (X_test or y_test) not found.")
     #do the predictions on the test set

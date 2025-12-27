@@ -5,10 +5,14 @@
 # virtual environment
 .venv/
 venv/
+**/.venv/
+**/venv/
+backend/.venv/
 
 # iDE and cache files
 .idea/
 __pycache__/
+**/__pycache__
 *.pyc
 .pytest_cache/
 

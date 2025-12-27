@@ -28,11 +28,19 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: postgres-storage
             #this is the path inside the container where the persistent storage will be available
               mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      ##specifies the type of access to the volume
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        #specifies the amount of resources being requested
+        resources:
+          requests:
+            storage: 1Gi

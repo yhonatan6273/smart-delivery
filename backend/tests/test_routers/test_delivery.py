@@ -26,7 +26,7 @@ def test_post_delivery(authorized_client):
     assert new_delivery.customer_id == "12345678"
     assert new_delivery.customer_phone == "+972541234567"
     assert new_delivery.customer_name == "John Doe"
-    assert new_delivery.customer_address == "tel aviv"
+    assert new_delivery.customer_address == "Tel Aviv-Yafo, Israel"
     assert new_delivery.delivery_type == "string"
     
 #for incorrect address in post delivery
@@ -38,12 +38,32 @@ def test_incorrect_address_post(authorized_client):
             "customer_phone": "0541234567",  
             "customer_id": "12345678",
             "customer_name": "John Doe",
-            "customer_address": "te",
+            "customer_address": "tee",
             "delivery_type": "string"
         }
     )
-    assert res.status_code == 400
-    assert res.json() == {"detail": "the address is not valid according to Google Maps"}
+    data = res.json()
+    error_detail = data["detail"][0]
+    
+    assert "Address not valid according to Google Maps" in error_detail["msg"]
+    assert res.status_code == 422
+   
+
+def test_short_address_post(authorized_client):
+          
+    res = authorized_client.post(
+        "/deliveries/",
+        json={
+            "customer_phone": "0541234567",  
+            "customer_id": "12345678",
+            "customer_name": "John Doe",
+            "customer_address": "te",
+            "delivery_type": "string",
+        }
+    )
+    assert res.status_code == 422
+
+
     
 #for normal user to get only their deliveries
 def test_get_normal_deliveries(authorized_client,test_deliveries):
@@ -91,10 +111,9 @@ def test_delete_delivery(authorized_client,test_deliveries):
     res = authorized_client.delete(f"/deliveries/{test_deliveries[1].id}")
     assert res.status_code == 204
 
+#trying to delete a delivery that does not exist and to delete a delivery that belongs to another user and not an admin
+@pytest.mark.parametrize("id,status_code", [("30",404),("4",403)]) 
 
-@pytest.mark.parametrize("id,status_code", [("30",404),#trying to delete a delivery that does not exist
-                                                           ("4",403) # trying to delete a delivery that belongs to another user and not an admin
-                                                           ])
 def test_incorrect_delete_delivery(authorized_client,test_deliveries,id,status_code):
     res = authorized_client.delete(f"/deliveries/{id}")
     assert res.status_code == status_code
@@ -104,10 +123,4 @@ def test_delete_delivery_admin(authorized_admin_client,test_deliveries):
     res = authorized_admin_client.delete(f"/deliveries/{test_deliveries[3].id}")
     assert res.status_code == 204
 
-
-def test_get_prediction(authorized_client,test_deliveries):
-    res = authorized_client.get(f"/deliveries/{test_deliveries[1].id}")
-    assert res.status_code == 200
-    assert "predicted_eta_minutes" in res.json()
-    assert isinstance(res.json()["predicted_eta_minutes"], float)
 

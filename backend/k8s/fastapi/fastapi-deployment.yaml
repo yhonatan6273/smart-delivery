@@ -20,8 +20,8 @@ spec:
 
       initContainers:
       - name: db-migration
-        image: smart-delivery-src:latest
-        imagePullPolicy: Never
+        image: jony6273/smart-delivery:main
+        imagePullPolicy: Always
         command: ["alembic", "upgrade", "head"]
 
         envFrom:
@@ -41,8 +41,8 @@ spec:
     
       containers:
         - name: fastapi
-          image: smart-delivery-src:latest
-          imagePullPolicy: Never
+          image: jony6273/smart-delivery:main
+          imagePullPolicy: Always
           command: ["uvicorn","src.main:app", "--host", "0.0.0.0", "--port", "8000"]
           ports:
             - containerPort: 8000

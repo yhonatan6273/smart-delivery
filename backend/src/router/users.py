@@ -9,7 +9,7 @@ from src.utils.UtilsLogin import hash_password
 
 
 
-router=APIRouter(prefix="/users",tags=["users"])
+router=APIRouter(prefix="/users",tags=["Register"])
 
 
 

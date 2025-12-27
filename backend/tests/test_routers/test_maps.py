@@ -1,7 +1,7 @@
 
 
 def test_get_route_success(client, monkeypatch):
-   #we are making a fake response from the google maps api
+   #we are making a fake response from the GOOGLE MAPS api
     fake_directions_result = {
         "distance": "120 km",
         "duration": "1 hour 15 mins",

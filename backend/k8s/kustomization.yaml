@@ -11,6 +11,7 @@ resources:
   - confluent-stack/
   - postgres/
   - akhq/ 
-  - consumer/
+  - consumers/
   - base/
+  - frontend/
   

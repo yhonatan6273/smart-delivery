@@ -5,7 +5,7 @@ metadata:
   
 data:
   #postgresql configuration
-  POSTGRES_DB: "deliveries_database"
+  POSTGRES_DB: "deliveries_database_k8s"
   POSTGRES_USER: "postgres"
   POSTGRES_HOSTNAME: "postgres-service"
   POSTGRES_PORT: "5432"
@@ -13,7 +13,8 @@ data:
   #kafka and schema registry configuration
   KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
   SCHEMA_REGISTRY_URL: "http://schema-registry-service:8081"
-  KAFKA_TOPIC_CALCULATE_ROUTE: "calculate_route"
+  KAFKA_TOPIC_REQUESTS: "delivery_requests"
+  KAFKA_TOPIC_RESULT: "delivery_results"
 
   #jwt configuration
   ALGORITHM: "HS256"

@@ -10,18 +10,19 @@ from src.auth.oauth2 import create_access_token
 from src.models import models
 from src.utils.UtilsLogin import hash_password
 from confluent_kafka import avro
-from confluent_kafka.admin import AdminClient, NewTopic
+from confluent_kafka.admin import AdminClient
 from confluent_kafka.avro import AvroProducer, AvroConsumer
 from confluent_kafka.schema_registry import SchemaRegistryClient
-from unittest.mock import MagicMock
 import time
 from src.kafka.producer import value_schema_str
+from src.kafka.producer import key_schema_str
 import logging
-
+from src.kafka.admin import create_topic_init
+from sqlalchemy.pool import NullPool
 
 
 log = logging.getLogger(__name__)
-load_dotenv(find_dotenv(".env.test"))
+load_dotenv(find_dotenv(".env.test"),override=True)
 
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
@@ -31,13 +32,16 @@ POSTGRES_DB = os.getenv("POSTGRES_DB")
 
 KAFKA_TEST_BROKER = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
 SCHEMA_REGISTRY_TEST_URL = os.getenv("SCHEMA_REGISTRY_URL")
-KAFKA_TEST_TOPIC = "calculate_route_test_topic"
+KAFKA_TOPIC_REQUESTS = os.getenv("KAFKA_TOPIC_REQUESTS")
+KAFKA_TOPIC_RESULTS = os.getenv("KAFKA_TOPIC_RESULT")
 VALUE_SCHEMA = avro.loads(value_schema_str)
-
+KEY_SCHEMA = avro.loads(key_schema_str)
 SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOSTNAME}:{POSTGRES_PORT}/{POSTGRES_DB}_test"
 
-#engine is the connection to the database
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+#DATA BASE Fixtures
+
+#engine is the connection to the database poolclass=NullPool to avoid connection issues in tests
+engine = create_engine(SQLALCHEMY_DATABASE_URL, poolclass=NullPool)
 #this will create a new session for the database
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -148,7 +152,7 @@ def test_deliveries(session, test_user, test_admin_user):
     return session.query(models.Delivery).all()
 
 
-
+#KAFKA Fixtures
 
 #fixture to set up the Kafka test environment (runs once per session)
 #it waits for the broker and schema registry to be available and creates the test topic
@@ -157,65 +161,71 @@ def kafka_test_service():
    
     admin_client = AdminClient({'bootstrap.servers': KAFKA_TEST_BROKER})
     retries = 10
+    broker_ready = False
     while retries > 0:
         try:
             admin_client.list_topics(timeout=5)
             log.info("kafka Broker is ready.")
+            broker_ready = True
             break
         except Exception:
             log.info(f"waiting for Kafka Broker ({retries} retries left)")
             retries -= 1
             time.sleep(5)
-            if retries == 0:
-                raise RuntimeError("could not connect to Kafka Broker for tests.")
+    if not broker_ready:
+        pytest.fail("Could not connect to Kafka Broker for tests.")
 
     sr_client = SchemaRegistryClient({'url': SCHEMA_REGISTRY_TEST_URL})
     retries = 10
+    sr_ready = False
     while retries > 0:
         try:
             sr_client.get_subjects()
             log.info("schema Registry is ready.")
+            sr_ready = True
             break
         except Exception:
             log.info(f"waiting for schema registry ({retries} retries left)")
             retries -= 1
             time.sleep(5)
-            if retries == 0:
-                raise RuntimeError("could not connect to Schema Registry for tests.")
+    if not sr_ready:
+        pytest.fail("Could not connect to Schema Registry for tests.")
 
     #create the test topic
+    log.info("Initializing topics using existing admin logic...")
     try:
-        topics = [NewTopic(KAFKA_TEST_TOPIC, num_partitions=1, replication_factor=1)]
-        admin_client.create_topics(topics)
-        log.info(f" topic '{KAFKA_TEST_TOPIC}' created.")
-    except Exception:
-        log.info(f" topic '{KAFKA_TEST_TOPIC}' likely already exists.")
-        pass
-
+        create_topic_init()
+    except Exception as e:
+        log.error(f"Error during topic initialization: {e}")
+       
     yield
 
-#fixture to provide an AvroProducer instance for tests
+
+
+# Fixture for a producer to send messages setup data during tests
 @pytest.fixture
-def avro_producer(kafka_test_service):
+def kafka_producer():
     producer_config = {
         'bootstrap.servers': KAFKA_TEST_BROKER,
         'schema.registry.url': SCHEMA_REGISTRY_TEST_URL,
     }
-    producer = AvroProducer(producer_config, default_value_schema=VALUE_SCHEMA)
+    producer = AvroProducer(producer_config,default_key_schema=KEY_SCHEMA, default_value_schema=VALUE_SCHEMA)
     yield producer
     producer.flush(10)
 
-#fixture to provide a subscribed AvroConsumer instance for tests
+
+
+# Fixture for a raw consumer to verify messages sent by your application
 @pytest.fixture
-def avro_consumer(kafka_test_service):
-    consumer_config = {
+def kafka_consumer():
+    conf = {
         'bootstrap.servers': KAFKA_TEST_BROKER,
-        'group.id': 'test-consumer-group',
-        'schema.registry.url': SCHEMA_REGISTRY_TEST_URL,
+        'group.id': 'test-verification-group',
         'auto.offset.reset': 'earliest',
+        'schema.registry.url': SCHEMA_REGISTRY_TEST_URL
     }
-    consumer = AvroConsumer(consumer_config)
-    consumer.subscribe([KAFKA_TEST_TOPIC])
+    consumer = AvroConsumer(conf)
+    
+    # We allow the consumer to subscribe dynamically in the test
     yield consumer
     consumer.close()
-

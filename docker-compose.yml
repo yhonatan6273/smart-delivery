@@ -24,12 +24,13 @@ services:
       retries: 5
       start_period: 180s
 
-  consumer:
+  backend_consumer:
     #build the image using the Dockerfile in the current directory
     build: 
-      context: ./backend
-    container_name: smart-delivery-consumer
-    #
+      context: .
+      dockerfile: backend/Dockerfile
+    
+    
     restart: unless-stopped
     #make sure the consumer starts only after the database and kafka are healthy
     depends_on:
@@ -40,14 +41,43 @@ services:
     env_file:
       - ./backend/.env.docker 
     #map the current directory to /usr/src/app in the container
-    volumes: ["./backend/:/usr/src/app"]
+    volumes:
+      - ./:/usr/src/app
     #set the PYTHONUNBUFFERED environment variable to ensure real-time logging
     environment:
       PYTHONUNBUFFERED: 1
+      PYTHONPATH: /usr/src/app:/usr/src/app/backend
     #run the consumer script
-    command: python -m src.kafka.consumer
-
+    command: python -m src.kafka.backend_consumer
+    deploy:
+      mode: replicated
+      replicas: 2
   
+
+
+  ml_service:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile 
+    restart: unless-stopped
+    depends_on:
+      fast-data-dev:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env.docker
+   
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONPATH: /usr/src/app:/usr/src/app/backend
+
+    command: python -m src.kafka.ml_consumer
+    deploy:
+      mode: replicated
+      replicas: 3
+
+
   akhq:
     image: tchiotludo/akhq:latest
     container_name: akhq
@@ -70,8 +100,9 @@ services:
 
   src:
     build:
-      context: ./backend
-    container_name: smart-delivery-api
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: app
     depends_on:
       postgres:
         condition: service_healthy
@@ -80,9 +111,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/:/usr/src/app
+      - ./:/usr/src/app
     env_file:
       - ./backend/.env.docker
+    environment:
+      PYTHONPATH: /usr/src/app/backend:/usr/src/app
 
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
@@ -103,10 +136,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    #this ensures that all database data is saved persistently, even if the container is removed.
+    #this ensures that all the database data is saved persistently, even if the container is removed.
     volumes:
       - postgres_data:/var/lib/postgresql/data
    
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80" 
+    depends_on:
+      - src    
+    env_file:
+        - ./frontend/.env
 
 volumes:
   postgres_data:

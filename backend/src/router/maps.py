@@ -3,12 +3,12 @@ from src.utils.google_map import get_directions
 
 
 
-router = APIRouter(prefix="/route",tags=["maps"])
+router = APIRouter(prefix="/route",tags=["Directions"])
 
 
 
 @router.get("")
-
+#Function to get directions between two points using Google Maps API
 def get_route(
     origin: str = Query(..., description="Starting point"),
     destination: str = Query(..., description="Destination point")
