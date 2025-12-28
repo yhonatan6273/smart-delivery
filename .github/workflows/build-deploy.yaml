@@ -4,18 +4,23 @@ on: [push, pull_request]
     
 jobs:
   #this job is for quick static and application tests  
+  #to see if there are any obvious issues before building and pushing the docker image
   linting:
     name: linting and validation
     runs-on: ubuntu-latest
+
     steps:
       - name: pulling git repo
         uses: actions/checkout@v5
         with: 
+          #pull LFS files (like ML models)
           lfs: true
 
+      #check the dockerfile for any issues
       - name: lint dockerfile
         run: docker run --rm -v "$(pwd):/work" -w /work hadolint/hadolint hadolint Dockerfile
 
+      #check the kubernetes files for any issues
       - name: validate kubernetes YAMLs
         uses: docker://ghcr.io/yannh/kubeconform:v0.7.0
         with:
@@ -41,33 +46,39 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
           KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-          KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
-          KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+          KAFKA_TOPIC_REQUESTS: ${{secrets.KAFKA_TOPIC_REQUESTS}}
+          KAFKA_TOPIC_RESULT: ${{secrets.KAFKA_TOPIC_RESULT}}
           SCHEMA_REGISTRY_URL: http://localhost:8081
     services:
       postgres:
         image: postgres
         env:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
-          POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+
         ports:
           - 5432:5432
+
         #set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
       kafka-stack:
         image: lensesio/fast-data-dev:latest
+
         ports:
           - 9092:9092 # Kafka Broker
           - 8081:8081 # Schema Registry
+
         env:
           ADV_HOST: localhost 
           RUN_AS_USER: "root"
           TOPIC_RECREATE: "1"
+
         #set health checks to wait until kafka stack has started
         options: >-
           --health-cmd "curl -f -s http://localhost:8081/subjects"
@@ -91,11 +102,13 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: install all dependencies
+        working-directory: ./backend
         run: pip install -r requirements.txt
 
       - name: run tests with pytest
+        working-directory: ./backend
         #run all tests except the slow ML tests
-        run: pytest -m "not ml"
+        run: pytest --ignore=tests/test_kafka/test_ml_consumer.py
         
   #this job is to run only the ML test
   test_ml:
@@ -112,39 +125,46 @@ jobs:
           ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
           KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-          KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
-          KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+          KAFKA_TOPIC_REQUESTS: ${{secrets.KAFKA_TOPIC_REQUESTS}}
+          KAFKA_TOPIC_RESULT: ${{secrets.KAFKA_TOPIC_RESULT}}
           SCHEMA_REGISTRY_URL: http://localhost:8081
   
     services:
       postgres:
         image: postgres
+
         env:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
           POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+
         ports:
           - 5432:5432
+
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
       kafka-stack:
         image: lensesio/fast-data-dev:latest
         ports:
           - 9092:9092 
           - 8081:8081 
+
         env:
           ADV_HOST: localhost 
           RUN_AS_USER: "root"
           TOPIC_RECREATE: "1"
+
         options: >-
           --health-cmd "curl -f -s http://localhost:8081/subjects"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 15 
           --health-start-period 30s
+
     steps:
       - name: pulling git repo
         uses: actions/checkout@v5
@@ -163,12 +183,14 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: install all dependencies
+        working-directory: ./backend
         run: pip install -r requirements.txt
 
       - name: run ML tests (pytest)
-        run: pytest -m "ml"
+        working-directory: ./backend
+        run: pytest tests/test_kafka/test_ml_consumer.py
        
-  #this job is for building, smoke testing, and pushing the docker image and he is depend on the success of the previous jobs      
+  #this job is for building and smoke testing and pushing the docker image and he is depend on the success of the previous jobs      
   build_and_push:
     name: build, smoke Test, and push
     runs-on: ubuntu-latest
@@ -185,32 +207,38 @@ jobs:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
       GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
       KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-      KAFKA_TOPIC_CALCULATE_ROUTE: ${{secrets.KAFKA_TOPIC_CALCULATE_ROUTE}}
-      KAFKA_CONSUMER_GROUP: ${{secrets.KAFKA_CONSUMER_GROUP}}
+      KAFKA_TOPIC_REQUESTS: ${{secrets.KAFKA_TOPIC_REQUESTS}}
+      KAFKA_TOPIC_RESULT: ${{secrets.KAFKA_TOPIC_RESULT}}
       SCHEMA_REGISTRY_URL: http://localhost:8081
     services:
       postgres:
         image: postgres
+
         env:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
           POSTGRES_DB: ${{secrets.POSTGRES_DB}}
           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+
         ports:
-          - 5432:5432 # Postgres
+          - 5432:5432 
+
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
       kafka-stack:
         image: lensesio/fast-data-dev:latest
         ports:
           - 9092:9092 
           - 8081:8081 
+          
         env:
           ADV_HOST: localhost 
           RUN_AS_USER: "root"
           TOPIC_RECREATE: "1"
+
         options: >-
           --health-cmd "curl -f -s http://localhost:8081/subjects"
           --health-interval 10s
@@ -223,7 +251,7 @@ jobs:
         uses: actions/checkout@v5
         with: 
           lfs: true
-
+      #giving the full tag name to the docker image based on the docker hub username variable
       - name: extract Docker image metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -239,6 +267,7 @@ jobs:
       - name: set up docker buildx
         uses: docker/setup-buildx-action@v3
 
+        #build and load but don't push yet
       - name: build and load Docker image
         id: build
         uses: docker/build-push-action@v6
@@ -247,11 +276,13 @@ jobs:
           load: true 
           push: false 
           tags: ${{ steps.meta.outputs.tags }}
-      #smoke test will run the container and check if the /docs endpoint is reachable
+
+
+      #smoke test will run the container and check if the /docs endpoint is reachable and nothing crashes
       - name: run smoke test
         run: |
           echo "starting container with all environment variables."
-          docker run -d --name smart-delivery-test -p 8000:8000 \
+          docker run -d --name smart-delivery-test --network host \
             -e POSTGRES_PORT=${POSTGRES_PORT} \
             -e POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME} \
             -e POSTGRES_DB=${POSTGRES_DB} \
@@ -262,8 +293,8 @@ jobs:
             -e ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES} \
             -e GOOGLE_API_KEY=${GOOGLE_API_KEY} \
             -e KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS} \
-            -e KAFKA_TOPIC_CALCULATE_ROUTE=${KAFKA_TOPIC_CALCULATE_ROUTE} \
-            -e KAFKA_CONSUMER_GROUP=${KAFKA_CONSUMER_GROUP} \
+            -e KAFKA_TOPIC_REQUESTS=${KAFKA_TOPIC_REQUESTS} \
+            -e KAFKA_TOPIC_RESULT=${KAFKA_TOPIC_RESULT} \
             -e SCHEMA_REGISTRY_URL=${SCHEMA_REGISTRY_URL} \
             ${{ steps.meta.outputs.tags }}
           echo "waiting for application to become healthy at http://localhost:8000/docs"
@@ -283,6 +314,7 @@ jobs:
           
           echo "application is healthy! smoke test passed"
 
+      #if we got to this stage we can now push
       - name: push docker image to docker hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker push ${{ steps.meta.outputs.tags }}
