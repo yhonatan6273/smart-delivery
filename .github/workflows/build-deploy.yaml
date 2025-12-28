@@ -18,7 +18,7 @@ jobs:
 
       #check the dockerfile for any issues
       - name: lint dockerfile
-        run: docker run --rm -v "$(pwd):/work" -w /work hadolint/hadolint hadolint Dockerfile
+        run: docker run --rm -v "$(pwd):/work" -w /work hadolint/hadolint hadolint backend/Dockerfile
 
       #check the kubernetes files for any issues
       - name: validate kubernetes YAMLs
@@ -54,7 +54,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}} 
-          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}_test
           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
 
         ports:
