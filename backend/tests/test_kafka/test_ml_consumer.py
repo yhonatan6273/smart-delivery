@@ -8,6 +8,7 @@ from src.kafka.ml_consumer import process_and_respond
 class StopLoopException(Exception):
     pass
 
+@pytest.mark.ml
 # Patching necessary components in the ml_consumer module
 @patch("src.kafka.ml_consumer.get_directions")
 @patch("src.kafka.ml_consumer.prediction_service")

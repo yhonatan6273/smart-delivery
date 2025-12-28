@@ -1,6 +1,6 @@
 name: build and deploy code
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
     
 jobs:
   #this job is for quick static and application tests  
@@ -29,8 +29,7 @@ jobs:
             -summary
             -strict
             -ignore-filename-pattern kustomization.yaml
-            ./k8s/
-
+            backend/k8s/
   #this job is to run quick tests on the application with the test services (api, db, kafka)
   test_app:
     name: application tests
@@ -106,9 +105,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: run tests with pytest
-        working-directory: ./backend
         #run all tests except the slow ML tests
-        run: pytest --ignore=tests/test_kafka/test_ml_consumer.py
+        run: pytest -m "not ml" backend/tests
         
   #this job is to run only the ML test
   test_ml:
@@ -187,8 +185,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: run ML tests (pytest)
-        working-directory: ./backend
-        run: pytest tests/test_kafka/test_ml_consumer.py
+        run: pytest -m "ml" backend/tests
        
   #this job is for building and smoke testing and pushing the docker image and he is depend on the success of the previous jobs      
   build_and_push:
@@ -273,6 +270,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: backend/Dockerfile
           load: true 
           push: false 
           tags: ${{ steps.meta.outputs.tags }}
