@@ -4,7 +4,8 @@ kind: Service
 metadata:
   name: fastapi-service
 spec:
-  #defines how the Service is exposed
+  #this type ensures balance between the containers load and external access
+  #and checks the health of the pods
   type: LoadBalancer 
   #this section defines the port mapping rules for the Service.
   ports:

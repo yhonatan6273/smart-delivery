@@ -2,15 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: akhq-deployment
+
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: akhq
+
   template:
+  
     metadata:
       labels:
         app: akhq
+
     spec:
       containers:
       - name: akhq

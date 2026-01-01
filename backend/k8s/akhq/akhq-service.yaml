@@ -3,10 +3,12 @@ kind: Service
 metadata:
   name: akhq-service
 spec:
-  selector:
-    app: akhq
+  #this type will expose the service on each Node's IP at a static port
+  type: NodePort
   ports:
   - protocol: TCP
     port: 8080
     targetPort: 8080
-  type: NodePort
+    nodePort: 30080
+  selector:
+    app: akhq

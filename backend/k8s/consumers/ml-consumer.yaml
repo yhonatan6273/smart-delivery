@@ -26,6 +26,7 @@ spec:
         - name: ml-consumer
           image: jony6273/smart-delivery:main
           imagePullPolicy: Always
+          #run the ml_consumer module to start consuming messages
           command: ["python", "-m", "src.kafka.ml_consumer"]
           envFrom:
             - configMapRef:

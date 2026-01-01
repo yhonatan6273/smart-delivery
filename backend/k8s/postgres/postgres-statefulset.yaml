@@ -28,17 +28,20 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: POSTGRES_PASSWORD
+            #set the PGDATA environment variable to specify the data directory
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: postgres-storage
-            #this is the path inside the container where the persistent storage will be available
+            #tells kubernetes to take the disk storage we created and mount it to this path inside the container
               mountPath: /var/lib/postgresql/data
+  #creating persistent storage for the Postgres database
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
       ##specifies the type of access to the volume
       spec:
+        #only one node can mount the volume for read and write operations at a time
         accessModes: [ "ReadWriteOnce" ]
         #specifies the amount of resources being requested
         resources:

@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - schema_registry-service.yaml 
+  - schema_registry-deployment.yaml
+  - schema-registry-config.yaml
+  

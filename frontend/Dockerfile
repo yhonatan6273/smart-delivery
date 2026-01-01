@@ -13,6 +13,10 @@ RUN npm install
 
 #copy the application code from local machine
 COPY . .
+#a build argument to pass the Google API key during build time
+ARG VITE_GOOGLE_API_KEY
+#set an environment variable inside the container with the value of the build argument
+ENV VITE_GOOGLE_API_KEY=$VITE_GOOGLE_API_KEY
 
 #build the static files for production (creates a 'dist' folder)
 RUN npm run build

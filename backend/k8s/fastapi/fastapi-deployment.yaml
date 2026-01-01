@@ -1,5 +1,5 @@
-# FastAPI Deployment Configuration
 # This file defines the deployment for the FastAPI application in the Kubernetes cluster.
+
 
 #the version of the kubernetes api to use for this object
 apiVersion: apps/v1
@@ -8,16 +8,21 @@ kind: Deployment
 metadata:
   name: fastapi-deployment
 spec:
+  #one copy of the pod should be running at all times
   replicas: 1
+  #this section defines how to identify the pods that belong to this deployment.
   selector:
     matchLabels:
       app: fastapi
+
+#this section defines the template for the pods that will be created by this deployment.
   template:
     metadata:
       labels:
         app: fastapi
+    #this section defines the specification for the pod.
     spec:
-
+      #init container to run alembic migrations before starting the main application container
       initContainers:
       - name: db-migration
         image: jony6273/smart-delivery:main
@@ -27,6 +32,7 @@ spec:
         envFrom:
         - configMapRef:
             name: app-config
+
         env:
         - name: POSTGRES_PASSWORD
           valueFrom:
@@ -38,7 +44,8 @@ spec:
             secretKeyRef:
               name: app-secrets
               key: DATABASE_URL
-    
+
+      #this section defines the containers that will run in the pod.
       containers:
         - name: fastapi
           image: jony6273/smart-delivery:main
@@ -49,6 +56,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: app-config
+          #define resource requests and limits for the container
           resources:
             limits:
               cpu: "500m"

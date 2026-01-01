@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: smart-delivery-frontend:latest
-          imagePullPolicy: IfNotPresent
+          image: jony6273/smart-delivery-frontend:main
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:

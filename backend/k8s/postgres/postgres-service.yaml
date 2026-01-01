@@ -4,8 +4,10 @@ kind: Service
 metadata:
   name: postgres-service
 spec:
+  type: ClusterIP
   ports:
     #the port that will be exposed by the service
     - port: 5432
+      targetPort: 5432
   selector:
     app: postgres

@@ -1,5 +1,6 @@
 #the main services that define the containers
 services:
+  #kafka all-in-one container
   fast-data-dev:
     image: lensesio/fast-data-dev:latest
     container_name: kafka-dev-box
@@ -19,7 +20,9 @@ services:
     #check if the service is healthy by pinging the schema registry endpoint           
     healthcheck:
       test: ["CMD", "curl", "-f", "http://fast-data-dev:8081"]
+      #check every 20 seconds if the service is healthy
       interval: 20s
+      #give it 10 seconds to respond
       timeout: 10s
       retries: 5
       start_period: 180s
@@ -30,7 +33,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     
-    
+    #restart the container only if it stops unexpectedly
     restart: unless-stopped
     #make sure the consumer starts only after the database and kafka are healthy
     depends_on:
@@ -51,6 +54,7 @@ services:
     command: python -m src.kafka.backend_consumer
     deploy:
       mode: replicated
+      #make 2 replicas of the backend consumer for load balancing
       replicas: 2
   
 
@@ -125,6 +129,7 @@ services:
     image: postgres:16
     ports:
       - "5432:5432"
+    #restart the container always if it stops 
     restart: always
     # set shared memory limit when using docker compose
     shm_size: 128mb
@@ -144,13 +149,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      #pass the Google API key build argument to the Dockerfile 
+      args:
+        - VITE_GOOGLE_API_KEY=${VITE_GOOGLE_API_KEY}
+    image: jony6273/smart-delivery-frontend:main
     container_name: frontend
     ports:
       - "3000:80" 
-    depends_on:
-      - src    
+    
     env_file:
         - ./frontend/.env
-
+        
+#define a named volume for persistent Postgres data storage
 volumes:
   postgres_data:

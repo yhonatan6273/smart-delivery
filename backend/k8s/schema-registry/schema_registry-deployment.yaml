@@ -18,11 +18,9 @@ spec:
           image: confluentinc/cp-schema-registry:7.6.1
           ports:
             - containerPort: 8081
-          env:
-            - name: SCHEMA_REGISTRY_HOST_NAME
-              value: "schema-registry-service"
-            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
-              value: "PLAINTEXT://kafka-service:9092"
+          envFrom:
+            - configMapRef:
+                name: schema-registry-config
           resources:
             requests:
               cpu: "100m"

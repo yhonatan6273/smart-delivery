@@ -7,11 +7,14 @@ resources:
   - secrets.yaml
 
   #list of all the component folders
-  - fastapi/
-  - confluent-stack/
-  - postgres/
-  - akhq/ 
-  - consumers/
   - base/
+  - postgres/
+  - kafka/
+  - zookeeper/
+  - schema-registry/
+  - akhq/ 
+  - fastapi/
+  - consumers/
   - frontend/
+
   

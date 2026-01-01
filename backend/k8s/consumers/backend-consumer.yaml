@@ -14,23 +14,24 @@ spec:
     spec:
       initContainers:
         - name: init-kafka-topics
-          image: smart-delivery-consumer:latest
-          imagePullPolicy: IfNotPresent
+          image: jony6273/smart-delivery:main
+          imagePullPolicy: Always
+          #create necessary kafka topics before starting the consumer
           command: ["python", "-c", "from src.kafka.admin import create_topic_init; create_topic_init()"]
           envFrom:
             - configMapRef:
                 name: app-config
       containers:
         - name: backend-consumer
-          image: smart-delivery-consumer:latest
-          imagePullPolicy: IfNotPresent
-  
+          image: jony6273/smart-delivery:main
+          imagePullPolicy: Always
+          #run the backend_consumer module to start consuming messages
           command: ["python", "-m", "src.kafka.backend_consumer"]
           envFrom:
             - configMapRef:
                 name: app-config
+                
           env:
-   
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

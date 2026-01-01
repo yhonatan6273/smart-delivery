@@ -1,3 +1,5 @@
+#file configmap so that k8s deployments can use these environment variables without hardcoding them
+#and easily change them if needed without building new images
 apiVersion: v1
 kind: ConfigMap
 metadata:

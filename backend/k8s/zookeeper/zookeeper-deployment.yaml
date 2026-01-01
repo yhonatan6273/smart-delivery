@@ -17,6 +17,9 @@ spec:
           image: confluentinc/cp-zookeeper:7.6.1
           ports:
             - containerPort: 2181
+          envFrom:
+            - configMapRef:
+                name: zookeeper-config
           resources:
             limits:
               cpu: "500m"
@@ -24,8 +27,3 @@ spec:
             requests:
               cpu: "100m"
               memory: "128Mi"
-          env:
-            - name: ZOOKEEPER_CLIENT_PORT
-              value: "2181"
-            - name: ZOOKEEPER_TICK_TIME
-              value: "2000"
