@@ -78,6 +78,7 @@ Run this single command to deploy the entire stack (DB, Kafka, Backend, Frontend
 ```bash
 kubectl apply -k k8s/
 ```
+
 ### 4. Verify Installation
 Check if all pods are running in the delivery-platform namespace:
 ```bash
@@ -85,6 +86,30 @@ kubectl get pods -n delivery-platform
 ```
 Wait until all pods show status Running. This might take a few minutes for the first image pull.
 
+## Alternative: Run with Docker Compose 🐳 
+If you prefer to run the system without Kubernetes, you can use Docker Compose.
+
+**1. Build and Start:**
+```bash
+docker-compose up --build -d
+```
+**2. Verify Running Containers**
+Check that all services are up and running:
+```bash
+docker-compose ps
+```
+**3. Access Services (Docker Compose):**
+
+Frontend: http://localhost:3000
+
+Backend: http://localhost:8000
+
+PostgreSQL: localhost:5432
+
+**4. Stop Containers**
+```bash
+docker-compose down
+```
 
 ## Accessing the Services🔌
 Since the services are running inside the Kubernetes cluster, use Port Forwarding to access them from your local machine.
