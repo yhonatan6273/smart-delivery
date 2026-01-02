@@ -4,6 +4,7 @@ services:
   fast-data-dev:
     image: lensesio/fast-data-dev:latest
     container_name: kafka-dev-box
+    restart: always
     ports:
       - "9092:9092"    # kafka broker
       - "8081:8081"    # schema registry
