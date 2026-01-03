@@ -12,9 +12,12 @@
 
 The system is fully containerized and orchestrated using **Kubernetes**, featuring a decoupled architecture with Apache Kafka.
 
-<img width="1642" height="910" alt="HOME PAGE" src="https://github.com/user-attachments/assets/8cb27358-1fd2-436a-a3c1-07ec304da19b" /><img width="1895" height="962" alt="MANAGER PAGE" src="https://github.com/user-attachments/assets/9ff4e2cb-4612-4089-bc1b-b91bc149089e" />
+<img width="7444" height="5200" alt="Untitled diagram-2026-01-03-164822" src="https://github.com/user-attachments/assets/c09eb0cf-dbf3-426a-ae32-849976f54785" />
 
-<img width="924" height="359" alt="image" src="https://github.com/user-attachments/assets/57edcd13-779c-424c-8c99-0b3444a548e7" />
+<img width="1895" height="962" alt="MANAGER PAGE" src="https://github.com/user-attachments/assets/2dfbf96d-d1a6-4f24-9a60-666ccceaaaca" />
+
+<img width="1642" height="910" alt="HOME PAGE" src="https://github.com/user-attachments/assets/74dedd60-69e2-4ea3-9971-d2e00f0783ba" />
+
 
 ## Architecture 🏗️ 
 
