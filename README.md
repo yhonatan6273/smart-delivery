@@ -16,7 +16,7 @@ The system is fully containerized and orchestrated using **Kubernetes**, featuri
 
 <img width="924" height="359" alt="image" src="https://github.com/user-attachments/assets/57edcd13-779c-424c-8c99-0b3444a548e7" />
 
-## 🏗️ Architecture
+## Architecture 🏗️ 
 
 The system follows an **Event-Driven Architecture**:
 
@@ -29,7 +29,7 @@ The system follows an **Event-Driven Architecture**:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started  🚀 
 
 Follow these steps to deploy the project locally using a "clean install" method.
 
@@ -111,7 +111,7 @@ PostgreSQL: localhost:5432
 docker-compose down
 ```
 
-## Accessing the Services🔌
+## Accessing the Services 🔌
 Since the services are running inside the Kubernetes cluster, use Port Forwarding to access them from your local machine.
 
 Open separate terminals for each command:
@@ -127,14 +127,38 @@ kubectl port-forward -n delivery-platform svc/fastapi-service 8000:80
 ```bash
 kubectl port-forward -n delivery-platform svc/postgres-service 5433:5432
 ```
-## Usage URLs🖥️
+## Usage URLs 🖥️
 Once port-forwarding is active, you can access the system:
 
 Service: Frontend UI -> URL: http://localhost:30000
 
 Service: Swagger API Docs -> URL: http://localhost:8000/docs
 
-## Running Tests🧪
+
+## Setting Up Admin Access 👑
+By default, every new user is registered with a `user` role. To access the **Manager Dashboard** and view, delete, or edit all deliveries, you need to manually upgrade a user to `admin`.
+
+**1. Register a new user** via the React UI (Register Page).
+
+**2. Connect to the Database:**
+You can use any SQL client (like DBeaver/pgAdmin) connecting to `localhost:5433` (if port-forwarded), or run this command directly inside the Kubernetes pod:
+
+```bash
+# Enter the Postgres pod
+kubectl exec -it -n delivery-platform $(kubectl get pod -n delivery-platform -l app=postgres -o jsonpath="{.items[0].metadata.name}") -- psql -U user -d delivery_db
+```
+**3. Update the User Role:**
+Run the following SQL query inside the pod (replace `your_email@example.com` with your registered email):
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your_email@example.com';
+-- Verify the change:
+SELECT * FROM users WHERE email = 'your_email@example.com';
+-- Exit psql:
+\q
+```
+Now refresh the website, and you will see the "Manager" tab in the navigation bar.
+
+## Running Tests 🧪
 To run the integration and unit tests, ensure you have the test environment variables set up (Step 2-D).
 ```bash
 cd backend
