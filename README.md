@@ -12,20 +12,25 @@
 
 The system is fully containerized and orchestrated using **Kubernetes**, featuring a decoupled architecture with Apache Kafka.
 
-<img width="7444" height="5200" alt="Untitled diagram-2026-01-03-164822" src="https://github.com/user-attachments/assets/c09eb0cf-dbf3-426a-ae32-849976f54785" />
+### System Architecture 🏗️
+<img width="100%" alt="System Architecture" src="https://github.com/user-attachments/assets/c09eb0cf-dbf3-426a-ae32-849976f54785" />
 
 
-
-https://github.com/user-attachments/assets/ee38c840-ff0d-45d8-a9ce-5f2d6aa17340
-
-
-
-<img width="1895" height="962" alt="MANAGER PAGE" src="https://github.com/user-attachments/assets/2dfbf96d-d1a6-4f24-9a60-666ccceaaaca" />
-
-<img width="1642" height="910" alt="HOME PAGE" src="https://github.com/user-attachments/assets/74dedd60-69e2-4ea3-9971-d2e00f0783ba" />
+### Demo Video 🎥
+[▶️ Click here to watch the project demo](https://github.com/user-attachments/assets/ee38c840-ff0d-45d8-a9ce-5f2d6aa17340)
 
 
-## Architecture 🏗️ 
+### UI Screenshots 💻
+
+**Manager Dashboard**
+<img width="100%" alt="MANAGER PAGE" src="https://github.com/user-attachments/assets/2dfbf96d-d1a6-4f24-9a60-666ccceaaaca" />
+
+**Home Page**
+<img width="100%" alt="HOME PAGE" src="https://github.com/user-attachments/assets/74dedd60-69e2-4ea3-9971-d2e00f0783ba" />
+
+
+ 
+## Architecture Overview
 
 The system follows an **Event-Driven Architecture**:
 
@@ -55,21 +60,22 @@ cd smart-delivery
 ### 2. Environment Configuration 🔐
 The project includes example configuration files. You need to generate the real .env files from them.
 
-Step A: Root Configuration
+**Step A: Root Configuration**
 ```bash
 cp .env.example_main .env
 ```
-Step B: Backend Configuration
+**Step B: Backend Configuration**
 ```bash
 cp backend/.env.example_backend backend/.env
 ```
-Important: Open backend/.env and update GOOGLE_API_KEY and SECRET_KEY. The database host is pre-configured for Kubernetes (postgres-service).
+> **Important:** Open `backend/.env` and update `GOOGLE_API_KEY` and `SECRET_KEY`. The database host is pre-configured for Kubernetes (`postgres-service`).
 
-Step C: Frontend Configuration
+**Step C: Frontend Configuration**
 ```bash
 cp frontend/.env.example_frontend frontend/.env
 ```
-Step D: Testing & Docker (Optional) If you plan to run tests (pytest) or use Docker Compose directly:
+**Step D: Testing & Docker (Optional)**
+If you plan to run tests (pytest) or use Docker Compose directly:
 ```bash
 # For running tests locally
 cp backend/.env.test.example backend/.env.test
@@ -83,7 +89,7 @@ cp backend/.env.docker.example backend/.env.docker
 ### 3. Deploy to Kubernetes ☸️
 We use Kustomize to manage namespaces and resources automatically.
 
-Run this single command to deploy the entire stack (DB, Kafka, Backend, Frontend):
+**Run this single command to deploy the entire stack (DB, Kafka, Backend, Frontend):**
 ```bash
 kubectl apply -k k8s/
 ```
@@ -109,18 +115,17 @@ docker-compose ps
 ```
 **3. Access Services (Docker Compose):**
 
-Frontend: http://localhost:3000
-
-Backend: http://localhost:8000
-
-PostgreSQL: localhost:5432
+* Frontend: http://localhost:3000
+* Backend: http://localhost:8000
+* PostgreSQL: `localhost:5432`
+* Kafka UI (Akhq): http://localhost:8080
 
 **4. Stop Containers**
 ```bash
 docker-compose down
 ```
 
-## Accessing the Services 🔌
+## Accessing the Services from Kubernetes 🔌
 Since the services are running inside the Kubernetes cluster, use Port Forwarding to access them from your local machine.
 
 Open separate terminals for each command:
@@ -136,12 +141,17 @@ kubectl port-forward -n delivery-platform svc/fastapi-service 8000:80
 ```bash
 kubectl port-forward -n delivery-platform svc/postgres-service 5433:5432
 ```
-## Usage URLs 🖥️
-Once port-forwarding is active, you can access the system:
+**4. Expose Kafka Url (Akhq):** Access at localhost:30080
+```bash
+kubectl port-forward -n delivery-platform svc/akhq-service 30080:8080
+```
 
-Service: Frontend UI -> URL: http://localhost:30000
-
-Service: Swagger API Docs -> URL: http://localhost:8000/docs
+## Summary of URLs 🖥️
+| Service | URL |
+|---------|-----|
+| **Frontend UI** | http://localhost:30000 |
+| **API Docs (Swagger)** | http://localhost:8000/docs |
+| **Kafka UI** | http://localhost:30080 |
 
 
 ## Setting Up Admin Access 👑
@@ -166,10 +176,26 @@ SELECT * FROM users WHERE email = 'your_email@example.com';
 \q
 ```
 Now refresh the website, and you will see the "Manager" tab in the navigation bar.
-
 ## Running Tests 🧪
-To run the integration and unit tests, ensure you have the test environment variables set up (Step 2-D).
+To run the integration and unit tests, you must first spin up the test environment (Test DB & Kafka).
+
+**1. Start the Test Infrastructure:**
+Run this command from the root directory to build and start the test containers :
+```bash
+docker-compose -f docker-compose.test.yml up -d --build
+```
+> **Note:** Ensure your `.env.test` files are configured correctly as shown in step 2-D and all the containers are up.
+
+**2. Run the Tests:**
+Navigate to the backend folder and run pytest:
 ```bash
 cd backend
 pytest
+```
+
+**3. Cleanup (Optional):**
+After finishing the tests, you can stop the test environment:
+```bash
+cd ..
+docker-compose -f docker-compose.test.yml down
 ```
