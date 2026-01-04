@@ -14,6 +14,12 @@ The system is fully containerized and orchestrated using **Kubernetes**, featuri
 
 <img width="7444" height="5200" alt="Untitled diagram-2026-01-03-164822" src="https://github.com/user-attachments/assets/c09eb0cf-dbf3-426a-ae32-849976f54785" />
 
+
+
+https://github.com/user-attachments/assets/ee38c840-ff0d-45d8-a9ce-5f2d6aa17340
+
+
+
 <img width="1895" height="962" alt="MANAGER PAGE" src="https://github.com/user-attachments/assets/2dfbf96d-d1a6-4f24-9a60-666ccceaaaca" />
 
 <img width="1642" height="910" alt="HOME PAGE" src="https://github.com/user-attachments/assets/74dedd60-69e2-4ea3-9971-d2e00f0783ba" />
