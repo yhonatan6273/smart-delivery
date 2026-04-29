@@ -22,7 +22,7 @@ from sqlalchemy.pool import NullPool
 
 
 log = logging.getLogger(__name__)
-load_dotenv(find_dotenv(".env.test"),override=True)
+load_dotenv(".env.test")
 
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
@@ -36,7 +36,7 @@ KAFKA_TOPIC_REQUESTS = os.getenv("KAFKA_TOPIC_REQUESTS")
 KAFKA_TOPIC_RESULTS = os.getenv("KAFKA_TOPIC_RESULT")
 VALUE_SCHEMA = avro.loads(value_schema_str)
 KEY_SCHEMA = avro.loads(key_schema_str)
-SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOSTNAME}:{POSTGRES_PORT}/{POSTGRES_DB}_test"
+SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOSTNAME}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 #DATA BASE Fixtures
 

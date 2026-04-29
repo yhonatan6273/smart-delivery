@@ -14,6 +14,8 @@ COPY backend/src ./src
 COPY backend/alembic.ini ./
 COPY backend/src/db/alembic ./alembic
 COPY backend/ML ./ML
+COPY backend/tests ./tests
+COPY backend/pytest.ini ./
 
 #set environment variables
 #where the application code is located inside the container
@@ -25,4 +27,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 
 #command to run the application only when the container starts
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"]

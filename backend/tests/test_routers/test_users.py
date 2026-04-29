@@ -5,9 +5,9 @@ import os
 from dotenv import load_dotenv
 
 
-load_dotenv()
+load_dotenv(".env.test")
 
-SECRET_KEY =os.getenv("SECRET_KEY")
+SECRET_KEY =os.getenv("SECRET_KEY","test_secret_key")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")  # Default to HS256 if not set
 
 
@@ -27,7 +27,7 @@ def test_post_user(client):
     new_user = users.UserOutput(**res.json())
     assert res.status_code == 201
     assert new_user.email == "1111@gmail.com"
-    return new_user
+    
 
 
 @pytest.mark.parametrize("email,password,status_code", [("testuser@gmail.com","password123",400),

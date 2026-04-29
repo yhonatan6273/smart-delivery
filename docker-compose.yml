@@ -38,7 +38,7 @@ services:
     restart: unless-stopped
     #make sure the consumer starts only after the database and kafka are healthy
     depends_on:
-      postgres:
+      postgres-service:
         condition: service_healthy
       fast-data-dev:
         condition: service_healthy
@@ -109,7 +109,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: app
     depends_on:
-      postgres:
+      postgres-service:
         condition: service_healthy
       fast-data-dev:
         condition: service_healthy
@@ -126,10 +126,10 @@ services:
 
     
 
-  postgres:
+  postgres-service:
     image: postgres:16
     ports:
-      - "5432:5432"
+      - "5436:5432"
     #restart the container always if it stops 
     restart: always
     # set shared memory limit when using docker compose
