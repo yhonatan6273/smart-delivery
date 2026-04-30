@@ -4,7 +4,7 @@ services:
   test-db:
     image: postgres:16
     env_file:
-      - ./backend/.env.test.docker
+      - .env.test.docker
     ports:
       - "5439:5432" 
     healthcheck:
@@ -37,7 +37,7 @@ services:
       test-kafka:
         condition: service_healthy
     env_file:
-      - ./backend/.env.test.docker
+      - .env.test.docker
     environment:
       - PYTHONPATH=/usr/src/app
       
