@@ -6,7 +6,12 @@ services:
     env_file:
       - ./backend/.env.test.docker
     ports:
-      - "5433:5432" 
+      - "5439:5432" 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   test-kafka:
     image: lensesio/fast-data-dev:latest
@@ -14,6 +19,28 @@ services:
       - "9092:9092"          #kafka Broker for tests
       - "8081:8081"          #schema registry for tests
     environment:
-      ADV_HOST: localhost   
+      ADV_HOST: test-kafka  
       RUN_AS_USER: "root"
       TOPIC_RECREATE: "1"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f  http://test-kafka:8081 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  runner:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-kafka:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env.test.docker
+    environment:
+      - PYTHONPATH=/usr/src/app
+      
+    command: >
+      sh -c "sleep 5 && pytest -v tests/"
+      
