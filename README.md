@@ -64,6 +64,8 @@ The project includes example configuration files. You need to generate the real 
 ```bash
 cp .env.example_main .env
 ```
+> **Important:** Open `.env` and update `GOOGLE_API_KEY`.
+> 
 **Step B: Backend Configuration**
 ```bash
 cp backend/.env.example_backend backend/.env
