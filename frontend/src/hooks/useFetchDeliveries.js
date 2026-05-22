@@ -29,7 +29,7 @@ export const useFetchDeliveries = () => {
       try {
         setError(null);
       
-        const res = await fetch('http://localhost:8000/deliveries', {
+        const res = await fetch(`/api/deliveries`, {
           method: 'GET',
           headers: {
          

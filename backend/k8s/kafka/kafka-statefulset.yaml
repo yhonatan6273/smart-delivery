@@ -21,4 +21,15 @@ spec:
           envFrom:
             - configMapRef:
                 name: kafka-config
+          volumeMounts:
+            - name: kafka-storage
+              mountPath: /var/lib/kafka/data
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 2Gi
             

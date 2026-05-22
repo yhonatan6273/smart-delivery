@@ -47,8 +47,9 @@ const ManagerPage = () => {
         origin: STORE_ORIGIN,
         destination: destinationAddress
       });
+      
 
-      const res = await fetch(`http://localhost:8000/route?${params.toString()}`, {
+      const res = await fetch(`/api/route?${params.toString()}`, {
         method: 'GET'
        
       });

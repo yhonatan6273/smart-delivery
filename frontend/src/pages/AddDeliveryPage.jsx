@@ -79,7 +79,7 @@ const handleChange = (e) => {
     setLoading(true);
     setError(null);
   try {
-      const res = await fetch('http://localhost:8000/deliveries', {
+      const res = await fetch(`/api/deliveries`, {
         method: 'POST',
         headers: {
           

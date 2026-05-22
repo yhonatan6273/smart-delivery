@@ -31,7 +31,7 @@ const EditDeliveryPage = () => {
     e.preventDefault();
     
     try {
-      const res = await fetch(`http://localhost:8000/deliveries/${id}`, {
+      const res = await fetch(`/api/deliveries/${id}`, {
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
