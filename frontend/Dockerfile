@@ -1,6 +1,6 @@
 
 # We use a Node image to build the React app 
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 #set the working directory inside the container
 WORKDIR /usr/src/app
