@@ -206,6 +206,5 @@ docker compose -f docker-compose.test.yml run --rm runner pytest
 **3. Cleanup (Optional):**
 After finishing the tests, you can stop the test environment:
 ```bash
-cd ..
 docker-compose -f docker-compose.test.yml down
 ```
