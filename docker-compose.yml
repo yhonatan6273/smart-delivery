@@ -108,6 +108,10 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: app
+    networks:
+      default:
+        aliases:
+          - fastapi-service
     depends_on:
       postgres-service:
         condition: service_healthy
