@@ -60,7 +60,7 @@ cd smart-delivery
 ### 2. Environment Configuration 🔐
 The project includes example configuration files. You need to generate the real .env files from them.
 
-**Step A: Root Configuration**
+**Step A: Root Configuration (only for docker)**
 ```bash
 cp .env.example_main .env
 ```
@@ -72,7 +72,7 @@ cp backend/.env.example_backend backend/.env
 ```
 > **Important:** Open `backend/.env` and update `GOOGLE_API_KEY` and `SECRET_KEY`. The database host is pre-configured for Kubernetes (`postgres-service`).
 
-**Step C: Frontend Configuration**
+**Step C: Frontend Configuration (only for docker)**
 ```bash
 cp frontend/.env.example_frontend frontend/.env
 ```
@@ -127,8 +127,6 @@ docker-compose ps
 **3. Access Services (Docker Compose):**
 
 * Frontend: http://localhost:3000
-* Backend: http://localhost:8000
-* PostgreSQL: `localhost:5432`
 * Kafka UI (Akhq): http://localhost:8080
 
 **4. Stop Containers**
@@ -144,10 +142,6 @@ Open separate terminals for each command:
 **1. Frontend UI (React):** Access directly at http://localhost:30000
 *(Exposed via NodePort 30000 - no terminal command required)*
 
-**2. Expose Backend API (FastAPI):** Access at http://localhost:8000
-```bash
-kubectl port-forward -n delivery-platform svc/fastapi-service 8000:80
-```
 **3. Expose Database (PostgreSQL):** Access at localhost:5433 (This allows local DB tools to connect without conflicting with local Postgres)
 ```bash
 kubectl port-forward -n delivery-platform svc/postgres-service 5433:5432
@@ -161,7 +155,6 @@ kubectl port-forward -n delivery-platform svc/akhq-service 30080:8080
 | Service | URL |
 |---------|-----|
 | **Frontend UI** | http://localhost:30000 |
-| **API Docs (Swagger)** | http://localhost:8000/docs |
 | **Kafka UI** | http://localhost:30080 |
 
 
@@ -174,19 +167,19 @@ By default, every new user is registered with a `user` role. To access the **Man
 You can use any SQL client (like DBeaver/pgAdmin) connecting to `localhost:5433` (if port-forwarded), or run this command directly inside the Kubernetes pod:
 
 ```bash
-# Enter the Postgres pod
-kubectl exec -it -n delivery-platform $(kubectl get pod -n delivery-platform -l app=postgres -o jsonpath="{.items[0].metadata.name}") -- psql -U user -d delivery_db
+
+kubectl exec -it $POD_NAME -n delivery-platform -- psql -U postgres -d deliveries_database_k8s
 ```
 **3. Update the User Role:**
 Run the following SQL query inside the pod (replace `your_email@example.com` with your registered email):
 ```sql
 UPDATE users SET role = 'admin' WHERE email = 'your_email@example.com';
--- Verify the change:
+ Verify the change:
 SELECT * FROM users WHERE email = 'your_email@example.com';
--- Exit psql:
+Exit psql:
 \q
 ```
-Now refresh the website, and you will see the "Manager" tab in the navigation bar.
+Now refresh the website go to home page login in again to the user, and you will see the "Manager" tab in the navigation bar.
 ## Running Tests 🧪
 To run the integration and unit tests, you must first spin up the test environment (Test DB & Kafka).
 
