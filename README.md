@@ -90,6 +90,15 @@ cp backend/.env.docker.example backend/.env.docker
 ```
 ### 3. Deploy to Kubernetes ☸️
 We use Kustomize to manage namespaces and resources automatically.
+```bash
+cd backend
+```
+**Run this single command inside backend**
+```bash
+cp backend/k8s/secrets.yaml.template  backend/k8s/secrets.yaml
+```
+> **Important:** Open `secrets.yaml` and update `GOOGLE_API_KEY` , `SECRET_KEY` ,`POSTGRES_PASSWORD`,`DATABASE_URL`
+
 
 **Run this single command to deploy the entire stack (DB, Kafka, Backend, Frontend):**
 ```bash
@@ -188,11 +197,10 @@ docker-compose -f docker-compose.test.yml up -d --build
 ```
 > **Note:** Ensure your `.env.test` files are configured correctly as shown in step 2-D and all the containers are up.
 
-**2. Run the Tests:**
-Navigate to the backend folder and run pytest:
+**2. Run the Tests:** Go to the root(smart-delivery) and run the test suite inside the containerized environment using the test runner:
+
 ```bash
-cd backend
-pytest
+docker compose -f docker-compose.test.yml run --rm runner pytest
 ```
 
 **3. Cleanup (Optional):**
