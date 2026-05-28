@@ -51,6 +51,8 @@ Follow these steps to deploy the project locally using a "clean install" method.
 * [Docker Desktop](https://www.docker.com/products/docker-desktop) (Kubernetes enabled)
 * [Git](https://git-scm.com/)
 * [Kubectl](https://kubernetes.io/docs/tasks/tools/)
+* **WSL 2 Allocation:** It is highly recommended to allocate at least **8GB RAM** and **4 CPUs** in your `.wslconfig` file to prevent Kubernetes/Docker engine crashes during startup.
+* **Python Environment:** Ensure you select the correct Python interpreter in your IDE pointing to the project's virtual environment to resolve local linting .
 
 ### 1. Clone the Repository
 ```bash
@@ -164,7 +166,7 @@ By default, every new user is registered with a `user` role. To access the **Man
 **1. Register a new user** via the React UI (Register Page).
 
 **2. Connect to the Database:**
-You can use any SQL client (like DBeaver/pgAdmin) connecting to `localhost:5433` (if port-forwarded), or run this command directly inside the Kubernetes pod:
+You can use any SQL client (like DBeaver/pgAdmin) connecting to `localhost:5433` (if port-forwarded), or run this command directly inside the Kubernetes pod (change the $POD_NAME to the postgres pod name):
 
 ```bash
 
