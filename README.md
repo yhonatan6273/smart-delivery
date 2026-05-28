@@ -90,15 +90,15 @@ cp backend/.env.docker.example backend/.env.docker
 ```
 ### 3. Deploy to Kubernetes ☸️
 We use Kustomize to manage namespaces and resources automatically.
-```bash
-cd backend
-```
-**Run this single command inside backend**
+**Run this single command**
 ```bash
 cp backend/k8s/secrets.yaml.template  backend/k8s/secrets.yaml
 ```
 > **Important:** Open `secrets.yaml` and update `GOOGLE_API_KEY` , `SECRET_KEY` ,`POSTGRES_PASSWORD`,`DATABASE_URL`
 
+```bash
+cd backend
+```
 
 **Run this single command to deploy the entire stack (DB, Kafka, Backend, Frontend):**
 ```bash
