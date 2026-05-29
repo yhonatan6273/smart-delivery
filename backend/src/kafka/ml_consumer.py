@@ -41,10 +41,13 @@ consumer_conf = {
     "group.id": "ml-prediction-group",
     #we want to read all messages from the beginning of the topic when we start the consumer for the first time
     "auto.offset.reset": "earliest",
+    #control when the consumer commits the offsets of messages it has processed
+    "enable.auto.commit": False,
 }
 #to witch broker to send messages 
 producer_conf = {
-    "bootstrap.servers": KAFKA_BROKER
+    "bootstrap.servers": KAFKA_BROKER,
+    "retries": 5,
 }
 
 # Function to process messages and respond with predictions
@@ -126,6 +129,10 @@ def process_and_respond():
             #Ensure the message is sent
             producer.poll(0)
             logging.info(f"Sent Result for ID {delivery_id}: {predicted_eta} min")
+            
+            #approve the message as processed
+            consumer.commit(asynchronous=False)
+            logging.info(f"Successfully processed, sent, and committed ID {delivery_id}")
 
         except Exception as e:
             logging.error(f"Error in ML loop: {e}")

@@ -17,6 +17,7 @@ consumer_conf = {
     "bootstrap.servers": KAFKA_BROKER,
     "group.id": "backend-updater-group",
     "auto.offset.reset": "earliest",
+    "enable.auto.commit": False,
 }
 
 # Function to consume messages and update the database
@@ -46,6 +47,8 @@ def update_db_loop():
                 delivery.predicted_eta_minutes = eta
                 session.commit()
                 logging.info(f"Updated DB: Delivery {delivery_id} -> ETA {eta}")
+                
+            consumer.commit(asynchronous=False)
             
         except Exception as e:
             logging.error(f"Error updating DB: {e}")
