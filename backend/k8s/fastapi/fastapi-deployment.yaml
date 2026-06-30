@@ -94,3 +94,12 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: DATABASE_URL
+          #define a liveness probe to check if the application is running and healthy 
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
